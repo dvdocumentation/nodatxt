@@ -12,8 +12,8 @@
 
    quick_start
    architect
-   configuration
    classes
+   configuration
    mobile
    sync
    datasets			
@@ -24,5 +24,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
 
 
