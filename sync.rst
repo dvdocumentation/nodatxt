@@ -3,15 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Синхронизация узлов
+Node synchronization
 =======================
 
-Передача узлов на сервер через API 
+Transferring nodes to the server via API
 ----------------------------------------
 
-Класс, объявленный в конфигурации, автоматически имеет API, описание которого можно взять в конструкторе (оно там сгенерировано с учетом идентификаторов), а в общем виде оно такое:
+A class declared in the configuration automatically has an API whose description can be taken from the constructor (there it is generated with the actual identifiers), and in general form it looks like this:
 
-Добавление/обновление узлов на сервере
+Adding/updating nodes on the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -28,17 +28,17 @@
     }
  }
 
-Добавление/обновление узлов на сервере сразу с регистрацией для устройтв
+Adding/updating nodes on the server with registration for devices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``POST /api/config/<config_uid>/node/<class_name>?room=<room_id>``
 
-Вернуть все узлы класса
+Return all nodes of a class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``GET /api/config/<config_uid>/node/<class_name>``
 
-Зарегистрировать все узлы в комнате
+Register all nodes in a room
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``POST /api/config/<config_uid>/node/<class_name>/register/<room_uid>``
@@ -52,32 +52,31 @@ Update _data in specific node : ``PUT /api/config/<config_uid>/ /node/<class_nam
 
 Delete specific node : ``DELETE /api/config/<config_uid>/node/<class_name>/<node_id>``
 
-Как видно, при передаче через API, класс и конфигурация определены в запросе, т.е. предполагается, что на момент обращения на API конфигурация с классами уже есть на сервере. Тоже самое на устройстве – register зарегистрирует узлы к передаче на устройства, но на устройстве должен быть класс этих узлов, иначе узлы не будут приняты. Т.е. конфигурация с соответствующими классами должна стоять на устройстве.
-Форматы передачи данных через файлы включают сами данные узла и ссылку на класс, который можно откуда то скачать. Как вариант, если совсем нет интернета, то можно сначала поставить конфигурацию в репо, а потом принять файлы с узлами. 
+As you can see, when transferring data via API, the class and configuration are defined in the request, i.e. it is assumed that at the time of the API call the configuration with classes already exists on the server. The same applies to the device—register will mark nodes for transfer to devices, but the device must have the class of these nodes, otherwise the nodes will not be accepted. That is, the configuration with the corresponding classes must be installed on the device.
+Data transfer formats via files include both the node data itself and a reference to the class which can be downloaded from somewhere. As an option, if there is no Internet at all, you can first install the configuration into the repository and then receive files with nodes. 
 
 
-Передача данных между сервером и устройствами через Rooms
+Data transfer between server and devices via Rooms
 -----------------------------------------------------------------------
 
-Для того, чтобы оперативно получать данные с сервера, мобильные клиенты группами объединяются в так называемые "комнаты" -постоянно поддерживаемое WebSocket-соединение. Для этого на сервере надо создать обычную комнату и присоединить 
-к ней устройства путем сканирования QR-кода комнаты
+In order to receive data from the server in real time, mobile clients are grouped into so-called “rooms”—a persistent WebSocket connection. To do this, you must create a regular room on the server and connect devices to it by scanning the room QR code.
 
-Через этот механизм работает:
+The following works through this mechanism:
 
- * передача узлов на сервер
- * выполнение методов
+ * node transfer to the server
+ * method execution
 
-API описано в предыдущем разделе. Для того, чтобы устройства получили объекты, эти объекты должны быть "зарегистрированы"
+The API is described in the previous section. For devices to receive objects, these objects must be “registered.”
 
 
-Передача узлов на устройство через файлы
+Transferring nodes to a device via files
 ---------------------------------------------
 
-Если нет интернета либо не хочется использовать rooms, можно передать файлы на устройство люым способом и либо "Открыть" либо "Поделиться" с NodaLogic. 
+If there is no Internet connection or you do not want to use rooms, you can transfer files to the device in any way and either “Open” them with or “Share” them to NodaLogic. 
 
-Это должен быть *.nl файл особого формата, в обязательном порядке содержащий ссылку на класс в формате ``<uid конфигурации>$<имя класса>`` и _data.
+This must be a *.nl file of a specific format, necessarily containing a reference to the class in the format ``<configuration uid>$<class name>`` and _data.
 
-Пример такого формата:
+Example of such a format:
 
 .. code-block:: Python
  
@@ -90,9 +89,6 @@ API описано в предыдущем разделе. Для того, чт
  }
  }
  ]
-
-
-
 
 
 
