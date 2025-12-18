@@ -3,49 +3,49 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Мобильный клиент (Android)
+Mobile client (Android)
 =============================
 
-Функции интерфейса
+Interface functions
 ----------------------
 
-Общее устройство интерфейса и событий
+General structure of the interface and events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Все визуальные узлы (узлы данных и пользовательские процессы) располагаются в разделах. 
+All visual nodes (data nodes and user processes) are placed in sections. 
 
 .. image:: _static/sections.png
        :scale: 55%
        :align: center
 
-Разделы задаются в секции конфигурации Разделы в виде ИД и заголовка. Также для раздела можно прописать команды, которые будут показаны в виде кнопок снизу раздела в виде списка через запятую <Заголовок команды>|<ид команды>. При нажатии на кнопку генерируется общее событие onStartMenuCommand в котором в качестве параметра передается ИД команды
-Класс узла в свою очередь относится к разделу через свойство Код раздела где нужно выбрать существующий раздел
+Sections are defined in the Sections part of the configuration as an ID and a title. Commands can also be specified for a section; they will be shown as buttons at the bottom of the section in the form of a comma-separated list <command caption>|<command id>. When a button is pressed, a global event onStartMenuCommand is generated, and the command ID is passed as a parameter.
+A node class, in turn, is linked to a section via the Section Code property, where you must select an existing section.
 
-Все узлы в разделах могут иметь обложку или так называемую обложку по умолчанию. Обложка задается в виде стандартной разметки (см. далее) в классе узла, но также может быть задана в _data (свойство "_cover") – таким образом узлы одного класса могут иметь разную разметку. И также может переопределяться для конкретного узла методом SetCover
+All nodes in sections can have a cover or so-called default cover. A cover is defined in the form of standard markup (see below) in the node class, but it can also be defined in _data (the "_cover" property)—thus nodes of the same class can have different markup. It can also be overridden for a specific node by the SetCover method.
 
 .. image:: _static/cover.png
        :scale: 55%
        :align: center
 
-При нажатии на узел в разделе открывается форма узла и генерируется событие onShow в котором можно прописать обработчик для отрисовки экрана, иначе он может оказаться пустым. С этого экрана пользователь может уйти, а потом вернуться (например открыв другой узел в другом экране), поэтому в таких случаях, в случае возврата на экран генерируется событие onResume в котором можно прописать тоже самое что и в onShow либо что то особенное.
+When you tap a node in a section, the node form opens and the onShow event is generated, where you can define a handler for drawing the screen, otherwise it may appear empty. The user can leave this screen and then return (for example, by opening another node on another screen), so in such cases, when returning to the screen, an onResume event is generated, where you can define the same logic as in onShow or something special.
 
-Принципы разметки экрана и других визуальных форм. 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Principles of screen and other visual form layout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-В системе используется 2 альтернативных подхода к разметке, которые можно комбинировать. По умолчанию (будем называть это основной подход) используется принцип разметки «по строкам» т.е. список вертикальных «строк», каждая строка которого – это массив элементов в горизонтали (каждый элемент – визуальный объект какого то типа type). Понятно, что такой подход не исчерпывающий, но для большинства бизнес-приложений его хватает. Высоту и поведение как строк и элементов при желании можно настроить. Альтернативой этому можно считать разметку контейнерами – вертикальными, горизонтальными и вертикальными/горизонтальными скроллами. Причем оба подхода можно смешивать, а можно например просто в 1ю строку добавить контейнер и весь экран выстроить на контейнерах (полностью перешагнуть через разметку строками не удастся – разметка все равно должна иметь хотя бы 1 строку).  
+The system uses two alternative approaches to layout that can be combined. By default (we will call this the main approach) a “by rows” layout principle is used, i.e. a vertical list of “rows,” each row being an array of elements horizontally (each element is a visual object of some type type). Obviously, this approach is not exhaustive, but it is sufficient for most business applications. The height and behavior of both rows and elements can be adjusted if needed. An alternative to this can be container-based layout—vertical, horizontal, and vertical/horizontal scroll containers. Both approaches can be mixed; for example, you can simply add a container into the first row and build the entire screen using containers (you cannot completely bypass row layout—the layout must still have at least one row).  
 
-Для разметки экрана, обложки узла, диалога, элемента списка применяется единый подход в виде строки JSON-макета (в параметрах python-методов это внутренние типы list/dict) такого вида:
+The same approach is used for screen layout, node cover, dialog, and list elements, in the form of a JSON layout string (in python method parameters this corresponds to internal list/dict types) of the following form:
 
 .. code-block:: Python
 
- [ #общий вертикальный список сверху-вниз
- [{"type":…},{"type":…}], #горизонтальная строка  элементов
- [{"type":…},{"type"":…}], #горизонтальная строка  элементов
+ [ #common vertical list top to bottom
+ [{"type":…},{"type":…}], #horizontal row of elements
+ [{"type":…},{"type"":…}], #horizontal row of elements
  ...
  ]
 
 
-Пример:
+Example:
 
 .. code-block:: Python
  
@@ -54,23 +54,25 @@
  [{"type":"Button","id":"btn_repl","caption":"@caption"}]
  ]
 
-В «строках» располагаются визуальные элементы. Каждый визуальный элемент имеет свойства:
- * **"type"** (string)- тип элемента, 
- * **"id"** (string)- идентификатор элемента. Для активных элементов (с которыми взаимодействует пользователь) как правило генерируется событие со свойством listener, равным id элемента. Также по id можно обратиться к элементу и задать его свойства
- * **"visible"** (int) – видимость элемента: 1 – видим, 0- невидим (но занимает место на экране), -1- невидим (и не занимает место на экране)
- * **"w"** – вес элемента. Вес элемента по горизонтали/вертикали (в зависимости от родителя-контейнера) относительно других элементов. По умолчанию w=1. Пример:  ``[{"type":"Button","id":"back","caption":"Back"},{"type":"Button","id":"next","caption":"Forward","w":2}] #кнопка next в два раза шире, потому что у нее w=2 (у back w=1 по умолчанию).`` В сочетании с высотой/шириной можно управлять разметкой. Зависит от поведения родительского контейнера. Если контейнер «по размеру элементов» то вес не имеет смысла, имеет смысл толкьо если «на всю ширину» или 0.
+Visual elements are placed in “rows.” Each visual element has the following properties:
+ * **"type"** (string) – element type, 
+ * **"id"** (string) – element identifier. For active elements (those the user interacts with), as a rule, an event is generated with a listener property equal to the element id. You can also refer to the element by id and set its properties.
+ * **"visible"** (int) – element visibility: 1 – visible, 0 – invisible (but takes space on the screen), -1 – invisible (and does not take space on the screen)
+ * **"w"** – element weight. The element’s weight horizontally/vertically (depending on the parent container) relative to other elements. By default w=1. Example:  ``[{"type":"Button","id":"back","caption":"Back"},{"type":"Button","id":"next","caption":"Forward","w":2}] #the next button is twice as wide because it has w=2 (back has w=1 by default).`` In combination with height/width, you can control layout. It depends on the behavior of the parent container. If the container is “wrap content,” then weight does not make sense; it only makes sense when “match parent” or 0.
 
- * **"width"** – ширина. Может задаваться как в относительных числовых размерах, так и в виде абсолютных значений: -1 – на весь контейнер, -2 – по высоте элементов. Зависит от поведения корневого контейнера. Если контейнер имеет измерение «по ширине элементов», то «на всю ширину» не имеет смысла
+ * **"width"** – width. Can be set both as a relative numeric size and as absolute values: -1 – full container width, -2 – by element height. Depends on the root container behavior. If the container is measured “by element width,” then “full width” makes no sense.
 
- * **"height"** – высота. Может задаваться как в относительных числовых размерах, так и в виде абсолютных значений: -1 – на весь контейнер, -2 – по высоте элементов. Зависит от поведения корневого контейнера. Если контейнер имеет измерение «по ширине элементов», то «на всю ширину» не имеет смысла
+ * **"height"** – height. Can be set both as a relative numeric size and as absolute values: -1 – full container height, -2 – by element height. Depends on the root container behavior. If the container is measured “by element width,” then “full width” makes no sense.
 
-Правила по умолчанию такие:
+ * **padding** - internal padding
 
- * Корневой вертикальный список растянут на весь экран без прокрутки. 
- * Все элементы в строке по умолчанию имеют высоту «по высоте элементов», а сама строка растянута по ширине «на весь контейнер» (т.е. по горизонтали от края до края экрана) и не имеет веса.  
- * Но можно поменять свойство горизонтальной строки с помощью добавления элемента "Parameters" с свойствами 	"w","width" и "height" – т.е. установить для горизонтальной строки (она является контейнером) вес ширину и высоту. Это важно, если требуется более сложная разметка. 
+Default rules are as follows:
+
+ * The root vertical list is stretched to fill the entire screen without scrolling. 
+ * All elements in a row by default have height “by element height,” and the row itself is stretched by width “to the full container” (i.e. horizontally from one side of the screen to the other) and has no weight.  
+ * But you can change the row properties by adding a "Parameters" element with properties "w", "width" and "height"—that is, for the horizontal row (which is a container) you set weight, width, and height. This is important when a more complex layout is required. 
  
-Например в этой разметке нижняя строка занимает всю оставшуюся высоту, за счет того, что у нее вес = 1, тогда, в элементе Input в этой строке имеет смысл применить высоту = -1 (на всю высоту)
+For example, in this layout, the bottom row takes all remaining height because it has weight = 1; then it makes sense to set height = -1 (full height) for the Input element in this row:
 
 .. code-block:: Python
 
@@ -79,57 +81,61 @@
   [{"type":"Parameters","w":1},{"type":"Input","height":-1,"id":"body","caption":"Text","value":"@body","input_type":"multiline"}]
  ]
 
-Сама горизонтальная строка является контейнером, но в нее также можно вписывать другие контейнеры. В принципе можно полностью отказаться от разметки строками и вывести только 1 строку с высотой – на весь экран, а внутри нее сделать все элементами -контейнерами.
+The horizontal row itself is a container, but you can also place other containers inside it. In principle, you can completely give up row layout and output only a single row with height equal to full screen, and place all elements inside it as containers.
 
-Контейнеры нужны как для разметки так и для того, чтобы собрать несколько элементов в группу и управлять ими вместе (например видимостью)
+Containers are used both for layout and for grouping several elements together to control them as a group (for example, visibility).
 
-.. warning::  Крайне важно помнить – если вы используете контейнеры, у элменто обязательно надо задавать ширину и высоту. У самих контейнеров как правило тоже. И также возможно Parameters у «строки»
+.. warning::  It is extremely important to remember that if you use containers, you must specify width and height for elements. Usually, containers themselves also need these. And you may also need Parameters on the “row.”
 
-У контейнеров есть свойства:
+Containers have the following properties:
 
- * Общие свойства (тип, вес, ширина, высота)
- * Свойство value – список элементов. Для Card в виде общей разметки "строками" (массив массивов)–[[]], а для остальных контейнеров – в виде массива/списка ( [] ) элементов. Которе соответственно выстраиваются по горизонтали или вертикали в зависимости от типа контейнера.
+ * Common properties (type, weight, width, height)
+ * The value property – the list of elements. For Card this is the general “by rows” layout (an array of arrays) – [[]], and for other containers—a flat list/array ( [] ) of elements. These are then laid out horizontally or vertically depending on the container type.
 
-Существуют такие варианты контейнеров:
+The following container variants exist:
 
- * **"VerticalLayout"** – вертикальный не визуальный контейнер без прокрутки
- * **"HorizontalLayout"** – горизонтальный не визуальный контейнер без прокрутки
- * **"VerticalScroll"** – вертикальная прокрутка. Имейте ввиду, что прокрутка «уничтожает» свойства элемента «на всю высоту»
- * **"HorizontalScroll"** – горизонтальная прокрутка
- * **"Card"** – визуальный контейнер «карточка» служит для визуального оформления как элементов списка, так и группировки элементов на экране.
+ * **"VerticalLayout"** – vertical non-visual container without scrolling
+ * **"HorizontalLayout"** – horizontal non-visual container without scrolling
+ * **"VerticalScroll"** – vertical scrolling. Keep in mind that scrolling “destroys” the “full height” property of an element.
+ * **"HorizontalScroll"** – horizontal scrolling
+ * **"Card"** – visual “card” container used to visually format both list elements and groups of elements on a screen.
 
-Виды визуальных объектов и их уникальные свойства
+Types of visual objects and their unique properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Надпись
-""""""""""
+Label
+"""""""""
 
-Вывод текстовой строки.
+Displays a text string.
 
 "type" : "Text"
  
-"value": строковая константа либо ссылка на переменную с префиксом @. Можно использовать html разметку (как и во всех остальных набдписях)
+"value": a string constant or a reference to a variable with @ prefix. You can use HTML markup (as with all other labels).
  
-"text_color" – цвет текста в HEX-формате (пример #F54927)
+"text_color" – text color in HEX format (e.g. #F54927)
 
-"background" - цвет фона в HEX-формате (пример #F54927)
+"radius" - background rounding (number)
+
+"stroke" - line outline (number)
+
+"background" – background color in HEX format (e.g. #F54927)
  
-"size" – размер (целое число)
+"size" – size (integer)
 
-Картинка
+Picture
 """""""""""
 
 .. image:: _static/picture.png
        :scale: 55%
        :align: center
 
-Вывод картинки
+Displays an image.
 
 "type" : "Picture"
 
-"value" – абсолютный путь к файлу. Константа либо ссылка на переменную _data с префиксом @
+"value" – absolute file path. A constant or a reference to a variable in _data with @ prefix.
 
-Пример:
+Example:
 
 .. code-block:: Python
 
@@ -138,110 +144,110 @@
  [{"type":"Text","value":"Hello <u>world</u>"}] #text constant with html
  ]
 
-Поле HTML
-""""""""""""
+HTML field
+"""""""""""""
 
-Вывод html-документа
+Displays an HTML document.
 
 "type" : "HTML"
 
-"value" – строка в формате HTML
+"value" – a string in HTML format
 
-Кнопка
+Button
 """""""""
 
-Вывод кнопки. При нажатии на кнопку экрана генерируется события с listener=<id элемента> . При использовании в списках см. раздел Активные элементы списков
+Displays a button. When the screen button is pressed, an event with listener=<element id> is generated. For use in lists, see the section Active list elements.
 
 "type" : "Button"
 
-"caption" – надпись на кнопке
+"caption" – button label
 
-"background" – цвет фона кнопки в HEX-формате
+"background" – button background color in HEX format
 
-Пример:
+Example:
 ``{"type":"Button","id":"btn_update","caption":"Simple button"}``
 
-Список нижних кнопок
-"""""""""""""""""""""""""""
+Bottom button bar
+"""""""""""""""""""""""""
 
 .. image:: _static/bottom_buttons.png
        :scale: 55%
        :align: center
 
-Выводит горизонтальный массив кнопок внизу экрана. Только для размещения в экране.
+Displays a horizontal array of buttons at the bottom of the screen. Only for placement on the screen.
 
 "type" : "BottomButtons"
 
-"value" – список кнопок с id. Параметры каждой кнопки такие же как у Button 
+"value" – a list of buttons with ids. Each button’s parameters are the same as for Button.
 
-Пример:
+Example:
 ``{"type":"BottomButtons","id":"bottom","value":[{"type":"Button","id":"back","background":"#F54927","caption":"Back"},{"type":"Button","id":"next","background":"#25a018","caption":"Forward","w":2}]}``
 
-Переключатель
-"""""""""""""""""""
+Switch
+"""""""""""""
 
-Элемент переключателя. Генерирует событие и пишет в переменную (id элемента) текущее значение переключателя.
+Toggle element. Generates an event and writes the current switch value into a variable (element id).
 
 "type": "Switch"
 
-"caption" –(строка) заголовок элемента
+"caption" – (string) element caption
 
-"value" –(булево) значение элемента для инициализации – в виде константы или ссылки на переменную. Как правило сюда ставят ссылку на id 
+"value" – (boolean) initial value of the element—either a constant or a reference to a variable. Usually a reference to the id is used here.
 
-Пример:
+Example:
 
 ``{"type":"Switch","caption":"Setting 1","id":"sw1","value":"@sw1"}``
 
-Галочка 
-""""""""""
+Checkbox
+"""""""""""
 
-Переключатель
+Toggle
 
-Элемент переключателя. Генерирует событие и пишет в переменную (id элемента) текущее значение переключателя.
+Toggle element. Generates an event and writes the current switch value into a variable (element id).
 
 "type" : "CheckBox"
 
-"caption" –(строка) заголовок элемента
+"caption" – (string) element caption
 
-"value" –(булево) значение элемента для инициализации – в виде константы или ссылки на переменную. Как правило сюда ставят ссылку на id 
+"value" – (boolean) initial value of the element—either a constant or a reference to a variable. Usually a reference to the id is used here.
 
-Пример:
+Example:
 
 ``{"type":"CheckBox","caption":"Setting 2","id":"cb1","value":"@cb1"}``
 
-Списки 
+Lists
 """""""""""""
 
 .. image:: _static/tables.png
        :scale: 55%
        :align: center
 
-Выводит различные списки элементов. В качестве наполнения можно использовать как список, созданный в обработчике так и датасет и список узлов класса. В элементах возможно размещение активных элементов. Для более красивого оформления элементы списка можно упаковать в Card. По умолчанию макет элемента – автогенерируемый, но его можно переопределить как для всего списка, так и для любого элемента.
+Displays various lists of elements. As content you can use either a list created in a handler or a dataset or a list of nodes of a class. Active elements may be placed inside list elements. For nicer formatting list elements can be wrapped in a Card. By default, the item layout is auto-generated, but it can be overridden both for the entire list and for any specific element.
 
 "type": "Table"
 
-"value" – источник данных списка. Может быть определен как просто «список словарей» в python что делает его хорошо совместимым с NoSQL такими как Pelican например
+"value" – the data source of the list. It can be defined simply as a “list of dictionaries” in python, which makes it well compatible with NoSQL such as Pelican, for example.
 
-Пример такого определения:
+Example of such a definition:
 
 .. code-block:: Python
 
  table_data = [{"name": "element 1", "key":"el1"},{"name": "element 2", "key":"el2"}]
  {"type":"Table","id":"l1","value":table_data}
 
-Либо (если используются датасеты) может быть указана ссылка на датасет:
+Or (if datasets are used) a reference to a dataset can be specified:
 
 ``{"type":"Table","id":"l2","value":"goods" }``
 
-Либо, если используется свойство nodes_source можно вывести список узлов (тогда при нажатии будет открываться узел).Это может быть поиск (отбор) узлов или просто какой то произвольный список. Узлы перечисляются в виде uid-ов. Преобразовать список обхектов в список uid-ов можно с помощью функции to_uid
+Or, if the nodes_source property is used, you can display a list of nodes (in this case, tapping an item will open the node). This can be a search (filter) of nodes or just some arbitrary list. Nodes are listed as UIDs. You can convert a list of objects into a list of UIDs using the to_uid function.
 
-Пример (вывод списка всех узлов класса Note):
+Example (displaying all nodes of the Note class):
 
 ``{"type":"Table","id":"t1","nodes_source":True,"value":to_uid(Note.get_all())}``
 
-"layout" – макет списка в целом в стандартном «строчном» формате. 
+"layout" – list layout as a whole in the standard “by rows” format. 
 
-Пример:
+Example:
 
 .. code-block:: Python
 
@@ -252,30 +258,30 @@
         ]
  {"type":"Table","id":"l1","value":table_data, "layout": table_layout }
  
-*_layout* в элементе списка – делает то же что и layput только для конкретного элемента списка. Это свойство просто добавляется в источник данных:
+*_layout* in a list item does the same as layout but only for a specific list element. This property is simply added to the data source:
 
 ``table_data = [{"name": "element 1", "key":"el1","_layout":layout2},{"name": "element 2", "key":"el2"}]``
 
-*_background* в элементе списка – раскрашивает фон в заданный HEX-цвет
+*_background* in a list element colors the background with the specified HEX color.
 
 ``table_data = [{"name": "element 1", "key":"el1","_background":"#701705" },{"name": "element 2", "key":"el2"}]``
  
-"columns_count" – количество столбцов таблицы. Выводит список в виде нескольких столбцов
+"columns_count" – number of table columns. Displays the list in several columns.
 
-"horizontal" – горизонтальная ориентация списка.
+"horizontal" – horizontal list orientation.
 
-"search_enabled" – включает режим поиска
+"search_enabled" – enables search mode.
 
-Для датасета своя секция настроек поиска dataset_search в которой есть method(метод поиска), keys(поля поиска) и min_length (необязательно) минимальная длина с которой начинается поиск.
+For a dataset there is its own search settings section dataset_search, which contains method (search method), keys (fields to search by) and min_length (optional) —minimum length from which search starts.
 
-Метод может быть:
+Method can be:
 
- * text - для обычного поиска по вхождению строки
- * levenshtein - для нечеткого поиска по расстоянию Левенштейна (будут выведены результаты в порядке убывания точности, с отбором >75, сама точность добавляется в записи в поле _confidence
+ * text – for normal substring search
+ * levenshtein – for fuzzy search by Levenshtein distance (results are shown in descending order of accuracy, with a threshold >75; the accuracy itself is added to records in the _confidence field)
 
-Также для датасета всегда включена пагинация (невидимая) но можно настроить размер страницы – свойство page_size
+Pagination is always enabled for the dataset (invisibly), but the page size can be configured via the page_size property.
 
-Пример:
+Example:
 
 .. code-block:: Python
 
@@ -284,114 +290,114 @@
                     [ {"type":"Table","id":"l2","value":"goods" ,"search_enabled":True,"dataset_search":dataset_search}]
         ])
 
-Список подчиненных узлов
-""""""""""""""""""""""""""
+List of child nodes
+"""""""""""""""""""""""""
 
 .. image:: _static/children.png
        :scale: 55%
        :align: center
 
-Выводит иерархический список подчиненных узлов и их потомков
+Displays a hierarchical list of child nodes and their descendants.
 
 "type" : "NodeChildren"
 
-Без параметров
+No parameters.
 
-Поля ввода
+Input fields
 """""""""""""
 
 .. image:: _static/inputs.png
        :scale: 55%
        :align: center
 
-Вся палитра полей ввода (кроме полей датасета, которые настраиваются аналогично) имеет тип Input – обычные поля, многострочные, выпадающие списки и т.д. Все введенные символы сразу записываются в  _data узла. Если стоит автосохранение в классе узла то узел сразу же сохраняется при этом.
+The entire palette of input fields (except dataset fields, which are configured similarly) have type Input—regular fields, multiline, dropdown lists, etc. All entered characters are immediately written into the node’s _data. If autosave is enabled for the node class, then the node is immediately saved as well.
 
 "type" : "Input"
 
-"input_type" тип значений ввода (по умолчанию – просто текст, input_type можно не указывать):
+"input_type" – input value type (by default just text, input_type can be omitted):
  
- * NUMBER – числа. Причем числа, при записи в переменную автоматически распознаются на float/integer в зависимости от наличия дробной части
- * PASSWORD – ввод пароля (закрывается звездочками)
- * MULTILINE – многострочный текст
- * DATE – дата. При выборе даты в _data попадает 2 значения – представление даты (в переменную=id) и в _d<id элемента> - дата в формате ISO
+ * NUMBER – numeric values. Numbers written into a variable are automatically recognized as float/integer depending on the presence of a fractional part.
+ * PASSWORD – password input (obscured by asterisks)
+ * MULTILINE – multiline text
+ * DATE – date. When a date is chosen, two values are written into _data—human-readable date (into the variable=id) and into _d<element id>—the date in ISO format.
 
-"events" – флаг, подключающий генерацию событий при вводе в поле ввода
+"events" – a flag enabling event generation when typing in the input field.
 
-"value" – отображаемое значение по умолчанию
+"value" – default displayed value.
 
-"caption" заголовок поля
+"caption" – field caption.
 
-"spinner_mode" – режим выпадающего списка. Необходимо задать в таком случае значение свойства source – список значений в виде строки с разделителем ";"
+"spinner_mode" – dropdown list mode. In this case, you must set the source property value—a list of values as a string with ";" as delimiter.
 
-"autocomplete" -режим подбора по первым символам. Также должен быть задан source
+"autocomplete" – mode of suggestion by first characters. source must also be set.
 
-Поля ввода датасетов
-""""""""""""""""""""""
+Dataset input fields
+"""""""""""""""""""""""""
 
-Используются для выбора конкретного значения датасета на форме – элемента справочника, документа. Удобство заключается в том, что выбирается ссылка на объект по которой можно получить объект целиком или представление объекта. *На картинке в разделе Поля ввода Production - поле датасета, в котором отображается имя продукции и код - такой задан шаблон*
+Used to select a specific dataset value on a form—a reference element, document, etc. The convenience is that a reference to an object is selected, and you can get either the full object or its representation by it. *In the screenshot in the Input fields section, Production is a dataset field, which displays the product name and code—this is how the template is defined.*
 
-Представление объекта датасета задается в поле Шаблон записи в датасете. Там также можно использовать html
+The dataset object representation is defined in the dataset’s Record Template field. HTML can also be used there.
 
 "type" : "DatasetField"
 
-"dataset" – имя датасета
+"dataset" – dataset name
 
-"spinner" – режим выбора из списка (исключает режим автоподстановки)
+"spinner" – mode of selection from a list (mutually exclusive with autocomplete mode)
 
-"autocomplete" – режим автоподстановки. 
+"autocomplete" – autocomplete mode.
 
-"caption" – заголовок поля
+"caption" – field caption
 
-"value" – значение по умолчанию. Задается в виде ссылки на элемент датасета <имя датасета>$<id элемента датасета>
-
-
-Надписи без объекта 
-"""""""""""""""""""""""""
-
-В разметка можно просто указать строку вместо объекта с type=Text, тогда будет выведена строка или , если указан префикс @ значение из _data, ``["Hello world"]``
+"value" – default value. Set as a reference to a dataset element <dataset name>$<dataset item id>.
 
 
-Как вариант можно использовать строковую конструкцию <заголовок>|<значение> тогда также будет выведено Строкове значение но в виде своеобразной Card с заголовком ``["title|Hello world"]``
+Bare labels (without object)
+"""""""""""""""""""""""""""""
+
+In markup you can simply specify a string instead of an object with type=Text, and then the string is rendered, or if the @ prefix is given, the value from _data is used, e.g. ``["Hello world"]``.
 
 
-Подобные конструкции можно использовать для упрощения, вместо Text, Card
+Alternatively you can use the string construction <title>|<value>, and then the string value will also be rendered but as a kind of Card with a title: ``["title|Hello world"]``
 
-Активные элементы списков (в Таблица)
+
+Such constructions can be used for simplification instead of Text or Card.
+
+Active list elements (in Table)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-В разметке элементов списка можно использовать не только надписи и картинки но и некоторые активные элементы, например, кнопки. 
-При взаимодействии с ними в узел поступают несколько другие (расширенные) данные чем при размещении в экране. Разработчик получает имя списка, имя активного элемента, позицию и значение (для элементов ввода значения)
+In the markup of list elements, you can use not only labels and images but also some active elements, such as buttons. 
+When interacting with them, the node receives slightly different (extended) data compared to placement on a screen. The developer gets the list name, active element name, position, and value (for value input elements).
 
-Например  Кнопка (Button). 
-Переменные, при событии нажатия (onInput):
+For example, a Button. 
+Variables for the press event (onInput):
 
-listener – поступает в формате ``<id таблицы>_input<id элемента>``
+listener – is given in the format ``<table id>_input<element id>``
 
-``<id таблицы>_input_position``  - в эту переменную возвращается позиция элемента списка, в котором произошло нажатие
+``<table id>_input_position``  – the position of the list element where the press occurred is returned here.
 
-Если в _data есть key тогда также возвращается ключ:
+If _data has key, then the key is also returned:
 
-``<id таблицы>_input_key``  - значение key элемента
+``<table id>_input_key``  – the value of the element's key.
 
-Для полей ввода – CheckBox/Switch/Input добавляется еще само введенное значение в переменную _data - ``<id таблицы>_input<id элемента>``
+For input fields – CheckBox/Switch/Input – the entered value itself is additionally placed into _data in the variable ``<table id>_input<element id>``.
 
-Доступны активные элементы:
+Available active elements:
 
- * Кнопка
- * Поля ввода (Input)
- * Галочка
- * Переключатель 
+ * Button
+ * Input fields (Input)
+ * Checkbox
+ * Switch 
 
-Функции/методы UI/UX мобильного клиента
+UI/UX functions/methods of the mobile client
 ----------------------------------------------
 
-Методы узла (на устройстве)
+Node methods (on the device)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Метод отрисовки экрана Show
+Screen drawing method Show
 """"""""""""""""""""""""""""""""
 
-**Show(layout)** отрисовка экрана на странице узла. Этот метод «очищает холст» и выводит разметку , принципы которой описаны в разделе «Разметка экрана». Как минимум его надо прописать в обработчике onShow чтобы что то появилось. Также он может быть вызван в других обработчиках чтобы обновить экран с новыми данными, перерисовать. Хотя для этого есть более экономная команда  UpdateView, но иногда перерисовать целиком – проще.
+**Show(layout)** – draws the node screen. This method “cleans the canvas” and renders the layout whose principles are described in the “Screen layout” section. At a minimum, it must be specified in the onShow handler so that something appears. It can also be called in other handlers to update the screen with new data, redraw it. Although there is a more economical UpdateView command for that, sometimes redrawing the entire screen is simply easier.
 
 .. code-block:: Python
 
@@ -401,44 +407,44 @@ listener – поступает в формате ``<id таблицы>_input<id
  ])
 
 
-Метод подключения механизмов экрана PlugIn
+Screen mechanisms connection method PlugIn
 """"""""""""""""""""""""""""""""""""""""""""
 
-**PlugIn(elements)** подключает несколько элементов к экрану. Это и аппаратные механизмы, такие как аппаратный сканер и визуальные элементы вне разметки (иначе бы они были выведеные в Show). Параметр команды – одномерный массив объектов (в python- список) с объектами вида {"type":"type_of_element","id":"element_id"}. 
+**PlugIn(elements)** connects several elements to the screen. These include hardware mechanisms, such as a hardware scanner, and visual elements outside layout (otherwise they would have been output via Show). The command parameter is a one-dimensional array of objects (a Python list) with objects of the form {"type":"type_of_element","id":"element_id"}. 
 
-.. attention:: Команда очищает все элементы перед доабавлением (self.PlugIn([])- все очистит), поэтому в ней надо сразу перечислить все элементы.
+.. attention:: The command clears all elements before adding them (self.PlugIn([]) will clear everything), so you must list all elements at once.
 
-Типы объектов(ключ type) бывают  следующие:
+The following object types (type key) exist:
 
-**CameraBarcodeScannerButton* – экранный элемент сканирования штрих-кода. Это кнопка на экране которая вызывает камеру для сканирования. При сканировании генеририруется событие с listener=<ИД элемента> и в _data[<ИД элемента>] будет помещен штрихкод
+**CameraBarcodeScannerButton** – on-screen barcode scan element. This is a button on the screen that opens the camera for scanning. When a code is scanned, an event with listener=<element id> is generated and the barcode is placed into _data[<element id>].
 
-Пример:
+Example:
 
 ``self.PlugIn([{"type":"CameraBarcodeScannerButton", "id":"barcode_cam"}])``
 
-**BarcodeScanner** – подключение перехвата штрихкода с аппаратного сканера (для терминалов сбора данных). Аппаратный сканер должен быть настроен в Настройках в разделе Настройка аппаратного сканера. Должна быть активирована подписка на события аппаратного сканера и указаны данные, которые через Intent отдает ПО вашего сканера, а также в самом сканере надо настроить чтобы он отдавал штрихкоды в Intent broadcast а не в клавиатуру например. При сканировании генерируется событие с listener=<ИД элемента> и в _data[<ИД элемента>] будет помещен штрихкод
+**BarcodeScanner** – connects hardware barcode scan intercept (for data collection terminals). The hardware scanner must be configured in Settings, in the Hardware Scanner Setup section. Subscription to hardware scanner events must be enabled, and the data sent via Intent by your scanner software must be specified. The scanner must also be configured to send barcodes via broadcast Intent instead of to the keyboard. When a code is scanned, an event with listener=<element id> is generated, and the barcode is placed into _data[<element id>].
 
-**FloatingButton** – добавляет плавающую кнопку (их может быть несколько) справа внизу экрана. У этого элемента, помимо id (по которому как у всех элементов генерируется событие) есть поле caption для вывода текста кнопки и  также есть поля, позволяющие настроить иконку svg (подробности смотри в разделе «svg-иконки») 
+**FloatingButton** – adds a floating button (there can be several) in the lower right corner of the screen. This element, besides id (by which, as for all elements, events are generated), has a caption field for button text and also fields to configure an svg icon (see the “svg icons” section for details). 
 
-Пример:
+Example:
 
 ``self.PlugIn([{"type":"FloatingButton","id":"add_child","caption":"Add <b>line</b>"}])``
 
-**ToolbarButton** – добавляет кнопку в тулбаре. У этого элемента, помимо id (по которому как у всех элементов генерируется событие) есть поле caption для вывода текста кнопки и  также есть поля, позволяющие настроить иконку svg (подробности смотри в разделе «svg-иконки») 
+**ToolbarButton** – adds a button in the toolbar. This element, besides id (by which, as for all elements, events are generated), has a caption field for button text and also fields to configure an svg icon (see the “svg icons” section for details). 
 
-Пример:
+Example:
 
 ``self.PlugIn([{"type":"ToolbarButton","id":"pin","caption":"Save","svg":svg2,"svg_size":24,"svg_color":"#FFFFFF"} ]])``
 
-**PhotoButton** – открывает камеру для фотографирования. Снимок сохраняется в файл, путь к файлу – в _data[<ИД элемента>]. Если подключена MediaGallery то снимок автоматически добавляется в галерею. Автоматическое добавление можно отключить поместив флаг OFFAutoupdateMediaGallery в _data узла. Тогда фото будет перехватываться в обработчике и с ним можно проводить какую то обработку перед добавлением в галерею.
+**PhotoButton** – opens the camera for taking a picture. The image is saved to a file, and the file path is stored in _data[<element id>]. If MediaGallery is connected, the picture is automatically added to the gallery. Automatic addition can be disabled by placing the OFFAutoupdateMediaGallery flag in the node’s _data. In that case, the photo will be intercepted in a handler, and you can do some processing before adding it to the gallery.
 
-Пример ручной обработки 
+Example of manual processing 
 
 .. code-block:: Python
  
  def CaptureImage(self, input_data=None):
         gallery_array = self._data["pic_files"]
-        base64 = getBase64FromImageFile(this._data["result_file"],50,50) #ни к чему не ведет, просто получили кроп в base64
+        base64 = getBase64FromImageFile(this._data["result_file"],50,50) #does not lead anywhere, we just got a cropped base64
         gallery_array.append(this._data["result_file"])
         toast(self._data["result_file"])
         UpdateMediaGallery(gallery_array )
@@ -446,61 +452,61 @@ listener – поступает в формате ``<id таблицы>_input<id
         return True,{}
 
 
-**GalleryButton** – открывает камеру для прикрепления медиафайла из галереи. Снимок сохраняется в файл, путь к файлу – в _data[<ИД элемента>]. Аналогичен PhotoButton.
+**GalleryButton** – opens the gallery to attach a media file. The selected file is saved, and the file path is stored in _data[<element id>]. Similar to PhotoButton.
 
-**MediaGallery** – галерея массива меддиафайлов внизу экрана с возможностью отркытия, удаления. По ключу = id элемента хранится массив путей к файлам, который отображается в галерее. С ним по умолчанию автоматически взаимодействуют PhotoButton и GalleryButton но также этот массив можно редактировать из обработчика (например поместить туда фото). Также доступно удаление пользователем. После удаления генерируется событие <имя_переменной>_delete в котором можно например забрать измененный массив файлов галереи.
+**MediaGallery** – a gallery of an array of media files at the bottom of the screen with open/delete capabilities. By the key equal to element id, an array of file paths is stored and displayed in the gallery. By default, PhotoButton and GalleryButton work with it automatically, but this array can also be edited in a handler (for example, to add a photo there). User deletion is also available. After deletion, an event <variable_name>_delete is generated, where you can, for example, read the updated gallery file array.
 
 .. image:: _static/inputs.png
        :scale: 90%
        :align: center
 
 
-Метод открытия узла в интефейсе _open()
-"""""""""""""""""""""""""""""""""""""""""
+Node opening method in the interface _open()
+"""""""""""""""""""""""""""""""""""""""""""
 
-**_open(method=None)** – открывает форму узла, как если бы его открыл пользователь. По умолчанию сработает onShow и метод, прописанный в конфигурации, но его можно переопределить в параметре method
+**_open(method=None)** – opens the node form as if it were opened by the user. By default, onShow and the method specified in the configuration will run, but this can be overridden in the method parameter.
 
-Метод обновления элементов на экране UpdateView
-"""""""""""""""""""""""""""""""""""""""""""""""""
+Screen element update method UpdateView
+"""""""""""""""""""""""""""""""""""""""""""""
 
-**UpdateView(id,element=None)** – команда для выборочного обновления элементов. Рекомендуется использовать для высоконагруженных интерфейсов (например ActiveCV)
+**UpdateView(id,element=None)** – command for selectively updating elements. It is recommended for high-load interfaces (such as ActiveCV).
 
-Работает в нескольких режимах:
+It works in several modes:
 
- 1.	Просто перерисовывает элемент по id. Это имеет смысле если значение элемента задано переменной (через @) а не константой. Пример: ``self.UpdateView("btn_repl",None)``
- 2.	Меняет свойства элемента. Пример: ``self.UpdateView("btn_repl",{"background":"#C82909"})``
- 3.	Заменяет элемент на другой элемент. Можно например проделывать это с контейнерами. Пример : ``self.UpdateView("btn_repl",{"type":"Input","id":"inp1","caption":"New input---"})``
+ 1. Simply redraws the element by id. This makes sense if the element’s value is specified via a variable (using @) and not a constant. Example: ``self.UpdateView("btn_repl",None)``.
+ 2. Changes element properties. Example: ``self.UpdateView("btn_repl",{"background":"#C82909"})``.
+ 3. Replaces an element with another element. For example, you can do this with containers. Example: ``self.UpdateView("btn_repl",{"type":"Input","id":"inp1","caption":"New input---"})``.
 
-Общие методы UI/UX для мобильного клиента
+General UI/UX methods for the mobile client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SetTitle (title)** – устанавливает заголовок окна узла
+**SetTitle(title)** – sets the node window title.
 
-**RefreshTab()** – обновляет текущую вкладку(раздел), из которой открыт узел. Имеет смысл когда узел добавили/изменили и возвращаемся в список
+**RefreshTab()** – refreshes the current tab (section) from which the node was opened. Makes sense when a node is added/changed and you are returning to the list.
 
-**CloseNode()** – закрывает форму узла
+**CloseNode()** – closes the node form.
 
-**RunGPS/ StopGPS** – команды запуска/остановки GPS. Может потребоваться разрешение от пользователя. Запущенный GPS считывает данные с устройства через промежутки времени  и первые данные будут не сразу, а также может меняться точность, поэтому для чтения данных GetLocation  лучше использовать таймер
+**RunGPS/ StopGPS** – commands to start/stop the GPS. May require user permission. Once started, GPS reads device data at intervals, and the first data will not appear instantly; accuracy may also vary, so to read data via GetLocation it is better to use a timer.
 
-**GetLocation** – получает данные GPS в формате сериализованного в строку JSON-объекта с полями:
+**GetLocation** – obtains GPS data as a JSON object serialized to a string with fields:
 
- *altitude*  – высота
- *latitude* – широта
- *longitude* – долгота
- *accuracy* – точность,  в метрах
- *provider* – провайдер данных
+ *altitude*  – altitude
+ *latitude* – latitude
+ *longitude* – longitude
+ *accuracy* – accuracy in meters
+ *provider* – data provider
 
-**ScanBarcode(listener)** – запускает сканирование камерой, как если бы пользователь нажал на кнопку сканера, подключенную через PlugIn. По результату возвращается событие, указанное в параметре.
+**ScanBarcode(listener)** – starts camera-based scanning as if the user pressed a scanner button connected via PlugIn. The result is returned as an event specified in the parameter.
 
-**Dialog(id,title,yes_caption="",no_caption="",layout=None)** – метод для показа как простых диалогов, так и диалогов с разметкой. Минимально – только заголовок, также можно переопределить 2 кнопки и сделать любую разметку layout по общим правилам разметки.
+**Dialog(id,title,yes_caption="",no_caption="",layout=None)** – method for displaying both simple dialogs and dialogs with layout. At a minimum—only a title; you can also override the two buttons and create any layout according to common layout rules.
 
 .. image:: _static/dialog.png
        :scale: 90%
        :align: center
 
-Возвращает событие с ``listener=<id>_positive/<id>_negative`` в зависимости от того, какую кнопку нажал пользователь. Если диалог с разметкой, и там есть какие то инпуты, то данные пишутся прямо в _data
+Returns an event with ``listener=<id>_positive/<id>_negative`` depending on which button the user pressed. If the dialog has layout and there are input fields in it, the data is written directly into _data.
 
-Примеры:
+Examples:
 
 .. code-block:: Python
  
@@ -524,15 +530,15 @@ listener – поступает в формате ``<id таблицы>_input<id
         elif self._data.get("listener") == "dlg2_positive":
           toast(str(self._data.get("qty_dialog") ))
 
-**AddTimer(key, period)/ StopTimer(key)** – запускает/останавливает таймер с нужным ключом. 
+**AddTimer(key, period)/ StopTimer(key)** – starts/stops a timer with the given key. 
 
-Пример:
+Example:
 
 ``AddTimer("my_timer",5)``
 
-**ShowProgressButton/ HideProgressButton** – рисует колесико прогресс-бара на кнопке и делает ее неактивной пока не будет выполнено HideProgressButton
+**ShowProgressButton/ HideProgressButton** – draws a progress wheel on the button and disables it until HideProgressButton is executed.
 
-Пример:
+Example:
 
 .. code-block:: Python
  
@@ -544,47 +550,47 @@ listener – поступает в формате ``<id таблицы>_input<id
  t = threading.Thread(target=worker)
  t.start()
 
-**ShowProgressGlobal/ HideProgressGlobal** – показывает общий (закрывающий весь экран) прогресс-бар/ снимает его. 
+**ShowProgressGlobal/ HideProgressGlobal** – shows a global (full-screen) progress bar / hides it. 
 
-**SetCover(node,layout)** – устанавливает новый макет для узла. Это именно макет, а не данные. Если у вас значения в макете заданы через @ - они и так обновятся.
+**SetCover(node,layout)** – sets a new layout for a node. This is exactly a layout, not data. If layout values are set via @, they will be updated anyway.
 
-**UpdateMediaGallery()** – обновляет галерею. Нужно выполнять после какиз либо действий с составом галереи.
+**UpdateMediaGallery()** – refreshes the gallery. Must be called after any operations with the gallery composition.
 
-Функции модуля android
+android module functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Интерфейсные команды:
+Interface commands:
 
- * toast(String toast) – вывести сообщение Андроид
- * message(String text) – вывести сообщение
- * speak(String text) – произнести текст (TTS engine)
- * listen() – запустить ожидание распознавания речи
- * vibrate() и vibrate(int duration) – вибрация и вибрация заданной длительности
- * beep()/beep(int tone)/ beep(int tone,int beep_duration,int beep_volume) – звуковой сигнал, т.ч. с возможностью выбрать тон (от 1 до 99), продолжительность и громкость (по умолчанию – 100)
- * notification(String message)/ notification (String message,String title)/ notification(String message,String title,int number) – уведомление в шторке уведомлений. Number – идентификатор уведомления, по которому к нему можно потом обратиться, чтобы либо убрать, либо перезаписать (обновить)
- * notification_progress(String message,String title,int number,int progress) – уведомление с прогресс-баром (от 0 до 100) notification_cancel(int number) – скрыть уведомление
+ * toast(String toast) – show Android toast
+ * message(String text) – show message
+ * speak(String text) – speak text (TTS engine)
+ * listen() – start speech recognition listening
+ * vibrate() and vibrate(int duration) – vibration and vibration for a specified duration
+ * beep()/beep(int tone)/ beep(int tone,int beep_duration,int beep_volume) – sound signal, including the ability to choose tone (1 to 99), duration, and volume (default 100)
+ * notification(String message)/ notification (String message,String title)/ notification(String message,String title,int number) – notification in the notification shade. number is the notification ID to later access it for removal or updating.
+ * notification_progress(String message,String title,int number,int progress) – notification with a progress bar (0 to 100) notification_cancel(int number) – hide notification.
 
 
-Некоторые общие свойства элементов
------------------------------------
+Some common element properties
+-------------------------------
 
-html текст в надписях
+HTML text in labels
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Везде, где в интерфейсе присутствует текст, можно использовать html-теги для разметки текста. Например Привет <b>мир</b>
+Everywhere in the interface where text is present you can use HTML tags for text formatting. For example: Привет <b>мир</b>.
 
-svg-иконки 
+svg icons
 ~~~~~~~~~~~~~~~
 
 .. image:: _static/svg.png
        :scale: 100%
        :align: center
 
-Для элементов, где предусмотрены иконки, можно использовать иконки svg. Способ такой:
- 
- 1. Скачиваете и сохраняете svg-файл 
- 2. Открываете файл текстовым редактором и копируете текст в переменную
- 3. Можно использовать эту переменную в свойстве элемента svg (также можно установить размер и цвет svg_size и svg_color)
+For elements that support icons, you can use svg icons. The approach is:
+
+ 1. Download and save the svg file. 
+ 2. Open the file in a text editor and copy the text into a variable.
+ 3. You can use this variable in the svg property of the element (you can also set size and color with svg_size and svg_color).
 
 .. code-block:: Python
  
@@ -593,26 +599,26 @@ svg-иконки
           {"type":"FloatingButton","id":"add","svg":svg1,"svg_size":48,"svg_color":"#000000"}
     ])
 
-Функции для преобразования изображений и галереи
+Functions for image and gallery conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**getBase64FromImageFile(path_to_image)** - возращает строку base64 из файла.
+**getBase64FromImageFile(path_to_image)** – returns a base64 string from a file.
 
-**convertImageFilesToBase64Array(paths_to_images_array)** - удобно для конвератции "Галереи" в одну строку: конвентирует массив путей в массив строк base64
+**convertImageFilesToBase64Array(paths_to_images_array)** – convenient for converting a “Gallery” into a single string: converts an array of paths into an array of base64 strings.
 
-**saveBase64ToFile (base64_string)** - сохраняет base64 строку во временный файл и возвращает путь к нему
+**saveBase64ToFile(base64_string)** – saves a base64 string to a temporary file and returns its path.
 
-**convertBase64ArrayToFilePaths** - сохраняет массив строк base64 в масисив путей (временных файлов), подходящий для использования в Галерее.
+**convertBase64ArrayToFilePaths** – saves an array of base64 strings to an array of paths (temporary files) suitable for use in the Gallery.
 
 
-Общие события мобильного клиента. Обработка событий приложения.
+Global events of the mobile client. Application event handling.
 -------------------------------------------------------------------
 
-Некоторые события возникают не в узлах, а  в целом в приложении, например событие при запуске платформы, при сканировании штрихкода вне узла и т.д. Они обрабатываются по тому же принципу что и события узлов – то есть имеют назначенное событие и обработчик, только не в структуре узла, а в структуре конфигурации на вкладке Общие события (в конфигурации это раздел CommonEvents)
+Some events occur not in nodes but in the application as a whole, for example the event triggered when the platform starts, when scanning a barcode outside a node, and so on. They are handled in the same way as node events—that is, an event and a handler are assigned, but not in the node structure; instead they are configured in the configuration structure on the Global Events tab (in the configuration, this is the CommonEvents section).
 
-Обработчики python для подобных событий, соответственно прописываются не в классах узлов, а просто как функции в коде обработчиков. Некоторые события также содержат данные, они передаются в input_data в соответствующий ключ/
+Python handlers for such events are defined not in node classes, but simply as functions in the handler code. Some events also contain data, which is passed in input_data in the corresponding key.
 
-Пример:
+Example:
 
 .. code-block:: Python
  
@@ -620,19 +626,95 @@ svg-иконки
     toast(input_data.get("barcode"))    
     return True,{}
 
-Они должны иметь параметр input_data типа словарь. 
+They must have the input_data parameter as a dictionary. 
 
-Перечень типов общих событий:
+List of global event types:
 
- * **onLaunch** – событие при загрузке конфигурации (либо при перезапуске). Без параметров.
- * **onTimer** – событие таймера. В input_data ключ “timer_key” – ключ сработавшего таймера
- * **onJSONFile** – событие открытия JSON-файла приложением (через Открыть или Поделиться). В input_data ключ "content" – содержимое файла в виде строки
- *	**onTextFile** – событие открытия текстового файла приложением (через Открыть или Поделиться). В input_data ключ "content" – содержимое файла в виде строки
- *	**onBarcode** – событие штрихкода, сканируемого через ScanBarcode т.е. вне узла, из главного меню
- *	**onStartMenuCommand** – нажатие на команду в разделе конфигурации (те команды, что добавляются через Разделы конфигурации)
- *	**onDialogResult** – событие диалога, вызванного из главного меню. Т.к. диалог вызывается с определенным идентификатором то в result возвещается либо result_positive либо result_negative а в ключ result_data возвращается данные из элементов ввода диалога, если таковые были.
+ * **onLaunch** – event when the configuration is loaded (or on restart). No parameters.
+ * **onTimer** – timer event. input_data contains the “timer_key” key—the key of the triggered timer.
+ * **onJSONFile** – event when a JSON file is opened by the app (via Open or Share). input_data contains the "content" key—the file contents as a string.
+ * **onTextFile** – event when a text file is opened by the app (via Open or Share). input_data contains the "content" key—the file contents as a string.
+ * **onBarcode** – barcode event, scanned via ScanBarcode, i.e. outside a node, from the main menu.
+ * **onStartMenuCommand** – a command click event from the configuration section (those commands added via Configuration Sections).
+ * **onDialogResult** – dialog event triggered from the main menu. Since the dialog is called with a specific identifier, result will be either result_positive or result_negative, and result_data contains data from the dialog’s input elements, if any.
 
+Searching, Sorting, and Visibility of Nodes (Client)
+------------------------------------------------------
 
+The NodaLogic mobile client has built-in mechanisms for searching, sorting, and hiding nodes that operate on the client side and require no additional code or API.
 
+These mechanisms are controlled through special service fields in the node's _data.
 
+Searching by Node
+~~~~~~~~~~~~~~~~~~~
 
+Default Behavior
+
+If a node doesn't specify a special search field, the application searches:
+
+by all keys of the _data dictionary
+
+search is performed by the string representation of the values
+
+_search_index Field
+
+To explicitly control the search and improve performance, it is recommended to use the field:
+
+``_search_index``
+
+If specified:
+
+* search is performed only by this field
+
+* search becomes faster and more controllable
+
+Example
+
+.. code-block:: Python
+
+self._data["_search_index"] = (
+self._data.get("number", "") + " " +
+self._data.get("customer_name", "")
+)
+
+``_search_index`` must be a regular string
+
+Sorting Nodes
+~~~~~~~~~~~~~~~~~~~
+
+Sorting node lists is also performed on the client side.
+
+Special fields are used for this:
+
+``_sort_string`` — sorting in ascending order
+
+``_sort_string_desc`` — sorting in descending order
+
+Sorting example
+
+Sorting by date (ascending):
+
+``self._data["_sort_string"] = self._data.get("plan_date")``
+
+Sorting by date (descending):
+
+``self._data["_sort_string_desc"] = self._data.get("created_at")``
+
+Hiding Nodes
+~~~~~~~~~~~~~~~~~~~
+
+A node can be hidden from the interface without physically deleting it.
+
+The field used for this is:
+
+_hidden
+
+If set to True:
+
+The node is not displayed in lists.
+
+The node remains accessible through code and the API.
+
+Example of hiding a node
+
+``self._data["_hidden"] = True``
