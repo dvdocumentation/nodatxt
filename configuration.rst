@@ -3,51 +3,51 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
   
-Структура конфигурации
+Configuration Structure
 ===============================
   
-Конфигурация – это JSON-файл, который задает поведение системы на клиенте и сервере. На сервере – конфигурация это по большей части – набор классов узлов. Узлы хранятся и выполняются по мере обращения к ним со стороны клиентов и внешней системы. А для мобильного клиента в конфигурации задаются многие другие свойства.
+A configuration is a JSON file that defines the behavior of the system on the client and the server. On the server, a configuration is mostly a set of node classes. Nodes are stored and executed as they are accessed by clients and external systems. For the mobile client, many other properties are defined in the configuration.
 
-Какие разделы есть в конфигурации
+What sections exist in the configuration
 
- * Общие свойства (Название конфигурации, поставщик, версия и т.д.)
- * Разделы. То, на каких вкладках в интерфейсе располагаются узлы и процессы. Подробнее в разделе Мобильный клиент
- * Классы. Структура классов данных – и серверных и клиентских. Подробнее в разделе Классы
- * Общие события. События, возникающие в системе вне классов узлов, т.е. в приложении в целом. Подробнее в подразделе «Общие события мобильного клиента»
- * Разделы с python-обработчиками для классов и общих событий. Это python-файлы, преобразованные в base64-формат, хранящиеся в структуре конфигурации. Доставляются на целевое устройство вместе с обновлением конфигурации и преобразуются в исполняемые временные файлы.
- * Датасеты. Хранение и доставка справочников и ссылок внешней системы на устройство. Подробнее в разделе Датасеты
- * Серверы – раздел для регистрации псевдонимов серверов, использующихся в функциях API
+ * General properties (configuration name, vendor, version, etc.)
+ * Sections. The tabs in the interface where nodes and processes are placed. More details in the Mobile Client section
+ * Classes. The structure of data classes—both server and client. More details in the Classes section
+ * Global events. Events that occur in the system outside of node classes, i.e. in the application as a whole. More details in the “Global mobile client events” subsection
+ * Sections with python handlers for classes and global events. These are python files converted to base64 format, stored inside the configuration structure. They are delivered to the target device along with configuration updates and converted into executable temporary files.
+ * Datasets. Storage and delivery of reference data and external system references to the device. More details in the Datasets section
+ * Servers – a section for registering server aliases used in API functions
 
-Описание формата файла
+File format description
 -----------------------------
   
-Некоторые из полей этого раздела формируются автоматически конструктором, но в случае формирования файла вне контрактора (например LLM) все поля необходимо будет заполнять согласно принципам, описанным ниже
+Some of the fields in this section are generated automatically by the configurator, but if the file is formed outside of the configurator (for example by an LLM), all fields must be filled according to the principles described below.
 
-Общие свойства конфигурации 
+General configuration properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**"name"** – имя конфигурации
+**"name"** – the configuration name
 
-**"uid"** – ИД установки на сервере, через который организуется доступ к объектам конфигурации для API и хранение
+**"uid"** – the installation ID on the server, through which access to configuration objects for API and storage is organized
 
-**"url"** – полный адрес хостинга, с которого клиенты будут скачивать конфигурацию(конфигурация изначально может быть попасть на клиент с файла, но для обновления он будет обращаться по этому адресу)
+**"url"** – the full hosting URL from which clients will download the configuration (the configuration may initially get onto the client from a file, but for updates it will use this address)
 
-**"content_uid"** – уникальный ID конфигурации независимо от ИД уставновки. Одна и та же конфигурация может быть развернута под разными uid, но content_uid останется тем же
+**"content_uid"** – a unique configuration ID independent of the installation ID. The same configuration can be deployed under different uids, but content_uid will remain the same.
 
-**"vendor"** имя поставщика конфигурации
+**"vendor"** – the configuration vendor name
 
-**"version"** – номер версии. 
+**"version"** – version number.
 
-**"NodaLogicFormat"** – версия формата. Анализируется приложением. Если приложение не поддерживает этот формат, будет предложено обновить приложение
+**"NodaLogicFormat"** – format version. It is checked by the application. If the application does not support this format, it will prompt the user to update the application.
 
-**"NodaLogicType": "ANDROID_SERVER"** – константа
+**"NodaLogicType": "ANDROID_SERVER"** – constant
 
-Обработчики
+Handlers
 ~~~~~~~~~~~~~~~~~~
 
-**"nodes_handlers"** и **"nodes_server_handlers"** – base64 закодированные файлы обработчиков. Они должны быть оформлены по определенному стандарту – верхняя часть содержим импорты и константы, которые автоматически генерируются системой. Далее идут классы и пользовательский код. В current_module_name прописывается url инстанса, в current_configuration_url – путь к API инстанса. Т.е. поля uid и url
+**"nodes_handlers"** and **"nodes_server_handlers"** – base64 encoded handler files. They must follow a specific standard: the upper part contains imports and constants automatically generated by the system. Then come the classes and user code. In current_module_name the instance URL is set, and in current_configuration_url—the path to the instance API. That is, the uid and url fields.
 
-Для андроид это:
+For Android this is:
 
 .. code-block:: Python
 
@@ -59,7 +59,7 @@
  from com.dv.noda import SimpleUtilites as su
  from datasets import GetDataSetData
  
- # Константы конфигурации
+ # Configuration constants
  current_module_name="296f962e-bd0d-4b32-8ac8-3bc9a1162a56"
  current_configuration_url="http://nmaker.pw/api/config/296f962e-bd0d-4b32-8ac8-3bc9a1162a56"
  _data_dir = su.get_data_dir(current_module_name)
@@ -68,54 +68,54 @@
  
  from nodes import Node
  
-Для server это:
+For the server this is:
 
 .. code-block:: Python
 
  from nodes import Node
 
-Классы
+Classes
 ~~~~~~~~
 
-**"classes"** – массив классов
+**"classes"** – an array of classes
 
-Каждый класс должен присутствовать и в массиве classes и также быть в обработчике, в зависимости от того где он будет выполняться. Либо в "nodes_handlers" либо в     "nodes_server_handlers"
+Each class must be present in the classes array and also in the handler, depending on where it will be executed—either in "nodes_handlers" or in "nodes_server_handlers".
 
-Класс имеет ключи:
+A class has the following keys:
 
- * **"name"** – имя, оно же идентифкатор класса. Должно быть python-совместимым (так как на этот класс в python также существует класс)
- * **"section_code"** и **"section"** – код раздела и название раздела (из раздела конфигурации sections) к которому отностится класс
- * **"has_storage"** – автосохранение данных при вводе в поля ввода
- * **"display_name"** – отображаемое имя, елси не используется «обложка»
- * **"cover_image"** – обложка в формате разметки, таком же как для экранов и люых мест где используется разметка в Андроид- клиенте
- * **"hidden"** – класс (если это класс-процесс) будет скрыт для отображения в интерфейсе)
- * **"class_type"** – доступно либо "custom_process" – узел-процесс, существующий в единственно экземпляре, создается вместе с загрузкой конфигурации либо "data_node" – узел данных, т.е. объект данных создаваемый или загружаемый в систему
+ * **"name"** – the name, which is also the class identifier. It must be python-compatible (since there is a corresponding python class for this class)
+ * **"section_code"** and **"section"** – the section code and section name (from the sections configuration section) to which the class belongs
+ * **"has_storage"** – autosave of data when entering values in input fields
+ * **"display_name"** – display name if a “cover” is not used
+ * **"cover_image"** – a cover in the same markup format as for screens and any places where markup is used in the Android client
+ * **"hidden"** – the class (if it is a process class) will be hidden in the interface
+ * **"class_type"** – can be either "custom_process" – a process node existing in a single instance, created when the configuration is loaded, or "data_node" – a data node, i.e. a data object created or loaded into the system
 
-  **"methods"** – массив методов класса. Методы должны быть описаны и в массиве и в обработчиках.
+  **"methods"** – an array of class methods. Methods must be described both in this array and in the handlers.
 
-Ключи метода:
+Method keys:
 
- * **"name"** и тоже самое в **"code"** (для совместимости)– имя метода
+ * **"name"** and the same in **"code"** (for compatibility) – method name
  * **"source": "internal"**
- * **"engine"** : либо "android_python" либо "engine": "server_python" в зависимости от того, где планируется выполнять метод
- * **"events"** – массив событий, которые возникают в системе – открытие формы, действия пользователя
+ * **"engine"** : either "android_python" or **"engine": "server_python"** depending on where the method is intended to be executed
+ * **"events"** – an array of events that occur in the system—form opening, user actions
 
-Ключи события:
+Event keys:
 
- * **"event"** – может быть "onShow" (при открытии формы узла), "onResume" ,"onInput" – любое событие ввода от пользователя или внешнее событие
- * **"listener"** – фильтр по "listener". События ввода как правило содержат дополнительное поле "listener", уточняющее событие. Например, id нажатой кнопки. Если не использовать "listener" то все события будут попадать на этот обработчик
- * **"actions"** – массив действий, который надо выполнить на событие. На одно и то же событие можно повесить несколько действий, но обычно оно одно.
+ * **"event"** – can be "onShow" (when opening a node form), "onResume", "onInput" – any user input event or external event
+ * **"listener"** – a filter by "listener". Input events usually contain an additional "listener" field clarifying the event. For example the id of the pressed button. If you do not use "listener", all events will go to this handler.
+ * **"actions"** – an array of actions to be performed on the event. Several actions can be attached to the same event, but usually there is just one.
    
-Ключи действия: 
+Action keys: 
    
- * **"action"** -"run"(синхронное выполнение), "runasync" – асинхронное выполнение, "runprogress" – синхронное с прогрессбаром.
+ * **"action"** – "run" (synchronous execution), "runasync" – asynchronous execution, "runprogress" – synchronous with a progress bar.
  * **"source"** : "internal"
- * **"method"** : имя метода из массива "methods"
- * **"postExecuteMethod"** – имя метода, который может быть выполнен после окончания выполнения основного метода. Актуально для асинхронного выполнения и выполнение с прогрессбаром.
+ * **"method"** : the method name from the "methods" array
+ * **"postExecuteMethod"** – the name of a method that can be executed after the main method has finished. Relevant for asynchronous execution and execution with a progress bar.
 
-Помимо прописывания в classes класс узла также необходимо разместить в обработчиках, используя то же имя и те же имена методов и соблюдая определенный формат описания – класс родитель, метод __init__.
+In addition to being defined in classes, the node class must also be placed in the handlers, using the same name and the same method names and following a specific description format—the parent class and the __init__ method.
    
-Для Андроид пример:
+For Android, an example:
    
 .. code-block:: Python
 
@@ -139,7 +139,7 @@
         
         return True,{}
              
-Для сервера:
+For the server:
 
 .. code-block:: Python
               
@@ -148,8 +148,8 @@
     def __init__(self, node_id=None, config_uid=None):
         super().__init__(node_id, config_uid)
 
-Также при оформлении методов класса нужно придерживаться единого формата , описанного в разделах Классы и Общие обработчики. Это параметры метода и структура возвращаемого кортежа. 
-Для методов класса:
+When defining class methods, you must follow a common format described in the Classes and Global Handlers sections. This concerns method parameters and the structure of the returned tuple.  
+For class methods:
  
 .. code-block:: Python
 
@@ -157,7 +157,7 @@
         
         return True,{}
 
-Для общих обработчиков:
+For global handlers:
             
 .. code-block:: Python
 
@@ -165,47 +165,47 @@
 
   return True,{}
 
-Секция Разделы
+Sections section
 ~~~~~~~~~~~~~~~~            
             
-**"sections"** – массив разделов
+**"sections"** – an array of sections
             
-**"name"** – отображаемое имя раздела
+**"name"** – the display name of the section
             
-**"code"** – ИД раздела
+**"code"** – the section ID
             
-**"commands"** – список команд  в виде списка через запятую <Заголовок команды>|<ид команды>. При нажатии на кнопку генерируется общее событие onStartMenuCommand в котором в качестве параметра передается ИД команды
+**"commands"** – a list of commands as a comma-separated list <command caption>|<command id>. When the button is pressed, a global event onStartMenuCommand is generated, and the command ID is passed as a parameter
             
-Псевдонимы серверов
+Server aliases
 ~~~~~~~~~~~~~~~~~~~~~~~~~            
             
-Если на клиенте используется такая конструкция как RemoteClass (по сути обертка вокруг API сервера) то надо завести хотябы один сервер с "is_default": true. Если еще есть сервера то они также используются тут. В таком случае в функциях используются их псевдонимы. В случае одного сервера, псевдоним можно не использовать.
+If the RemoteClass construct is used on the client (essentially a wrapper around the server API), then at least one server with "is_default": true must be defined. If there are other servers, they are also specified here. In that case, their aliases are used in functions. If there is only one server, the alias can be omitted.
             
-**"servers"** – массив псевдонимов серверов
+**"servers"** – an array of server aliases
             
-Ключи объекта сервера:
+Server object keys:
             
- * **"alias"** – псевдоним сервера, который используется в фунциях работы с удаленными серверами
- * **"url"** – адрес сервера
- * **"is_default"** – признак сервера по умолчанию
+ * **"alias"** – server alias used in functions for working with remote servers
+ * **"url"** – server address
+ * **"is_default"** – flag indicating the default server
             
-Раздел «Датасеты»
+“Datasets” section
 ~~~~~~~~~~~~~~~~~~~~~
             
-**"datasets"** – массив объектов типа «Датасет»
+**"datasets"** – an array of “Dataset” objects
 
- * **"name"** – имя датасета, по которому к нему обращаться в прикладном решении
- * **"hash_indexes"** – список ключей записей для hash-индексов в виде массива. Пример: [
+ * **"name"** – dataset name, used to access it in the application
+ * **"hash_indexes"** – a list of record keys for hash indexes as an array. Example: [
                 "barcode",
                 "article"
             ]
-* **"text_indexes"** – список полей полнотекстового поиска в виде массива. Пример: [
+* **"text_indexes"** – a list of full-text search fields as an array. Example: [
                 "name"
             ]
-* **"view_template"** – шаблон отображения записи датасеты в поле ввода формы. Пример: "{name}, {article}"  
-** **"api_url"** – прямой url доступа к датасету. Откуда он будет грузится. Обязательно поле. Принцип формирования видно на примере. 
+* **"view_template"** – a template for displaying a dataset record in a form input field. Example: "{name}, {article}"  
+** **"api_url"** – direct URL for accessing the dataset. This field is mandatory. The generation principle can be seen in the example.
           
-Пример конфигурации целиком
+Full configuration example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           
 .. code-block:: JSON
