@@ -19,14 +19,11 @@ Adding/updating nodes on the server
 
 .. code-block:: JSON 
 
- {
+ [{
     "_id": "node_id",
-    "_data":{
-        "_id": "node_id",
-        "field1": "value1",
-        "field2": "value2"
-    }
- }
+    "field1": "value1",
+    "field2": "value2"
+ }]
 
 Adding/updating nodes on the server with registration for devices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,6 +39,15 @@ Register all nodes in a room
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``POST /api/config/<config_uid>/node/<class_name>/register/<room_uid>``
+
+Register specific nodes in a room
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``POST /api/config/<config_uid>/node/<class_name>/register/<room_uid>``
+
+.. code-block:: JSON 
+
+ ["node_id_1","node_id_2"]
 
 Working with specific node
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,6 +95,7 @@ Example of such a format:
  }
  }
  ]
+
 
 
 
