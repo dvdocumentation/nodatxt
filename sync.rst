@@ -25,10 +25,6 @@ Adding/updating nodes on the server
     "field2": "value2"
  }]
 
-Adding/updating nodes on the server with registration for devices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``POST /api/config/<config_uid>/node/<class_name>?room=<room_id>``
 
 Return all nodes of a class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,6 +91,7 @@ Example of such a format:
  }
  }
  ]
+
 
 
 
