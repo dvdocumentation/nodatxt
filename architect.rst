@@ -3,38 +3,38 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Platform Architecture
+Архитектура платформы
 ===========================
 
-NodaLogic is a distributed system that can be either centralized with a server and mobile client devices, or decentralized, in the sense that the logic of “nodes,” the main building blocks of the system, can run both on the server and on client devices; there may be many servers, and each client can in turn also act as a server.
+NodaLogic - это распределенная система, которая может быть как централизованной с сервером и клиентами- мобильными устройствами и веб клиентами, так и децентрализованной, в том плане что логика «узлов», основных кирпичиков системы, может выполняться как на сервере, так и на устройствах-клиентах, серверов может быть много, а каждый клиент в свою очередь может быть также сервером.
 
-The core of solutions is the “node.” It is an object that is simultaneously a data storage and has executable methods. It is a self-contained microservice that stores data and is ready to interact with other nodes. Frontend and backend solutions are built out of nodes (the boundary between front/back is blurred in NodaLogic, since “the server is wherever the node is being executed at the moment”). In some sense, it is like a neuron that has input/output and weights.
+Основа решений – «узел». Это объект, который одновременно является хранилищем данных и имеет исполняемые методы. Это такой самостоятельный микросервис, хранящий данные и готовый взаимодействовать с другими узлами. Из узлов строится фронтовое решение и бекенд (границы фронт/бек размыты в NodaLogic, так как «сервер там, где в данный момент выполняется узел») . В каком-то смысле, это как нейрон, имеющий вход/выход и веса.
 
-A node can represent entities such as a “task,” “document,” “document row,” any other business entity—warehouse, item, bin. And also virtual entities—for example, “item balance in a bin.”
+Узлом может быть такие сущности как «задача», «документ», «строка документа», любая другая бизнес сущность – склад, товар, ячейка. И виртуальные сущности – «остаток товара в ячейке», например.
 
 .. image:: _static/node.png
        :scale: 55%
        :align: center
 
-Node data is stored in _data — this is both operational and persistent memory. _data is a JSON-compatible data structure. A node has a reference to a class. The class defines the behavior of the node, its envelope, describes events (the mapping between events and methods).
+Данные узла хранятся в _data – это и оперативная и долговременная память. _data – это JSON-совместимая структура данных.  Узел имеет ссылку на класс. Сам класс задает поведение узла, его обложку, описывает события (связь событий и методов).
 
-Data from the interface and handlers goes into _data, and conversely, data stored in _data is reflected in the interface. Essentially, this is a regular JSON-oriented NoSQL.
+Данные из интерфейса и обработчиков попадают в _data, и наоборот хранимые в _data данные отображаются в интерфейсе. По сути - это обычная JSON-ориентированная NoSQL.
 
-On a mobile device, when the user enters something, an onInput event occurs, and if there is any method-handler for it, it processes this data, saves it, may call other methods or send it to other nodes (by calling their methods). In the picture below the situation is: the user pressed a button — an onInput event triggered, and there is a subscription to it in the form of an Input method (python) — the python method (on the mobile device) shows a toast (message) with the variable input1, which stores the value entered in the input field.
+На клиенте(мобильном устройстве или веб-клиенте) при пользовательском вводе возникает событие onInput/onInputWeb  и если на него есть какой то метод-обработчик, то он обработает эти данные, сохранит, возможно вызовет другие методы  или отправит другим узлам (путем вызова их методов). На картинке ниже ситуация: пользователь нажал на кнопку - сработало событие onInput, на которое есть подписка в виде метода Input (python) - метод python (на мобильном устройстве) выводит тост(сообщение) с переменной input1, в которой хранится ввод из поля ввода.
 
 .. image:: _static/event.png
        :scale: 55%
        :align: center
 
-On the server (if the node has server methods), the node can be viewed as a microservice. When you create a class, the REST API for that class is automatically created, allowing you to access both the class and its objects—nodes—via HTTP requests. If the node has server methods, they can also be executed remotely both from external systems and from mobile clients.
+На сервере (если узел имеет серверные методы) узел можно представить как микросервис. Когда вы создаете класс, автоматически создается REST API класса по которому можно обратиться как к классу так и к его объектам - узлам посредством HTTP-запросов. Если при этом узел имеет серверные методы, то их также можно выполнять удаленно как из внешней системы так и с мобильных клиентов.
 
 .. image:: _static/api.png
        :scale: 55%
        :align: center
 
-Thus, formally, **a node is _data + a class (describing methods and behavior of the node in the system)**. On one hand, a node is a data unit, like a record in NoSQL; on the other hand, it is a microservice.
+Таким образом, формально **узел – это данные _data + класс (описывающий методы и поведение узла в системе)**. С одной стороны узел - это единица данных, как запись в NoSQL, с другой стороны - микросервис.
 
-Here is an example of a node class in python (for the mobile client). You can see that it inherits from Node and has some of its own methods. The Open method is responsible for rendering, and Input — for handling input.
+Вот пример класса узла в python (для мобильного клиента). Видно что он наследуется от Node и имеет какие-то свои методы. Method Open отвечает за отрисовку, в Input - за обработку ввода.
 
 .. code-block:: Python
 
@@ -58,37 +58,40 @@ Here is an example of a node class in python (for the mobile client). You can se
         
         return True,{}
 
-At the moment, two types of nodes are available:
+В данный момент доступны 2 типа узлов:
 
- * A regular node (data node) with the behavior described above
- * A user process — a node that exists in a single instance, created in the client interface to perform certain user tasks. Unlike a node, it does not need to be created or transferred; it is created when the configuration is loaded
+ * Обычный узел (Узел данных) с поведением, описанным выше
+ * Пользовательский процесс – узел, существующий в одном экземпляре, который создается в интерфейсе клиента для выполнения каких то пользовательских задач. В отличии от узла – его не надо создавать или передавать, он создается при загрузке конфигурации
 
-Classes, in turn, are stored in the configuration — a JSON structure or file. Thus, a configuration is a set of node classes. But not only that — the configuration also defines the solution settings as a whole — general events, sections, and so on. That is, the configuration is a JSON storage of node classes, handlers (in the form of a base64-encoded python file), and global settings. More about the structure of this file in the section "Configuration Structure"
+Классы, в свою очередь хранятся в конфигурации – JSON структуре или файле. Таким образом конфигурация – это набор классов узлов. Но не только – в конфигурации также задается настройка решения в целом – общие события, разделы и так далее. Т.е. конфигурация - это JSON-хранилище классов узлов, обработчиков (в виде base64-кодированного python-файла) и общих настроек. Подробнее о структуре этого файла в разделе "Структура конфигурации"
 
 .. image:: _static/repo.png
        :scale: 55%
        :align: center
 
-A client device can have any number of configurations loaded simultaneously into the “configuration repository,” and they are all active at the same time, both for the user and for each other. Classes simply tend to be placed in their own sections and do not interfere with one another. The server follows the same principle — each configuration exists independently, each class has its own API, and each node operates independently.
+На клиенте может быть загружено одновременно любое число конфигураций  в «репозиторий конфигураций» и все они активны одновременно, как для пользователя так и друг для друга. Просто классы размещаются к правило в своих разделах и не мешают друг другу. На сервере такой же принцип – каждая конфигурация существует сама по себе, каждый класс имеет свой API, каждый узел живет сам по себе.
 
-A node can operate on the server and on the client or both simultaneously. As a rule, it works locally — on the machine where it is executed, but it may access a node on the server, which will be described further.
+Узел может работать на сервере и на клиенте или и там и там одновременно. При этом как правило, он работает локально – на той машине где выполняется, но может обращаться к узлу на сервере, о чем далее
 
-Here is the scenario of *passive node use in an offline solution* (as a data object):
+Вот сценарий *пассивного использования узла в оффлайновом решении* (как объекта данных)
 
- 1. Nodes are pushed to the server via an HTTP request. A class in the server configuration automatically has its own REST API. It can be used to create nodes, request data, and execute methods.
- 2. Nodes are sent to clients through the Rooms mechanism. Devices are grouped into rooms via WebSocket and are always ready to receive updates about nodes, just like messengers receive messages.
- 3. A node on the device operates independently offline. No connection to the server is required. The client runs UI/UX and accumulates data.
- 4. When necessary, data is sent to server nodes by calling their methods, or simply the _data of the node on the server is replaced by _data of the node from the client.
- 5. The external system retrieves data through the same REST API.
+ 1. Узлы сбрасываются HTTP-запросом на сервер. Класс в конфигурации на сервере автоматически имеет свой REST-API. По нему можно создавать узлы, запрашивать данные, выполнять методы. 
+ 2. Узлы отправляются клиентам через механизм комнат (Rooms) Устройства объединяются в rooms через WebSocket и всегда готовы принять изменения по узлам как мессенджеры принимают сообщения
+ 3. Узел на устройстве работает самостоятельно оффлайн. Связь с сервером не нужна. На клиенте выполняется UI/UX, накапливаются данные
+ 4. По необходимости данные отправляются в узлы на сервере, путем вызова их методов либо просто _data в таком же узле на сервере замещается _data узла с клиента
+ 5. Внешняя система через тот же REST-API забирает данные.
 
-The scenario where the server plays its role is almost the same but has an important difference — business logic is executed on the server. Let’s look at this using a WMS solution example:
+Сценарий, где сервер играет свою роль почти такой же, но имеет важное отличие – бизнес логика выполняется на сервере. Разберем это на примере WMS-решения:
 
- 1. The accounting system sends orders to the NodaLogic server — let’s say these are some types of documents — customer orders, supplier invoices.
- 2. Nodes on the server that are task generators create task-nodes for client devices and register them in a Room; they appear on the device.
- 3. On the device, the user completes tasks; the data about actual completion is immediately sent to the server (essentially an online mode). Accounting processes are executed on the server, such as calculating item balances, for example.
- 4. After completion, either the server sends an HTTP request to the external system, or the system requests completed tasks from the task-generator node (which are effectively actual results). It may also contact the accounting node to request, for example, item balances in bins.
+ 1. Учетная система отправляет распоряжения на сервер NodaLogic – допустим это какие то накладные системы – заказы клиентов, накладные от поставщиков.
+ 2. Узлы на сервере, которые являются генераторами задач, порождают узлы-задачи для клиентов-устройств и регистрируют их в Room, они попадают на устройство
+ 3. На устройстве пользователь выполняет задачи, данные о фактическом выполнении сразу поступают на сервер (по сути онлайн-режим). На сервере выполняются учетные процессы, такие как вычисление остатков товаров например. 
+ 4. По выполнению либо сервер шлет HTTP-запрос во внешнюю систему, либо система обращается к узлу-генератору задач и забирает выполненные задачи (по сути-фактические данные). Также она может обратиться к учетному узлу и запросить например остатки в ячейках
 
-There can also be scenarios *without a server at all*, where a mobile solution is simply created, in which nodes are sent to the server through rooms or even through files. Or node data is not used at all — and this is just a mobile solution.  
-Thus, the system can simply serve as a mobile client builder — a frontend builder.
+И также могут быть сценарии *вообще без сервера*, где просто создается мобильное решение, в котором узлы отправляются на сервер через rooms либо вообще через файлы. Либо вообще не используются узлы данных и это просто мобильное решение. 
+Таким образом, система может быть просто конструктором мобильного клиента - фронта.
 
-Summarizing all of the above, one can say that a node is a self-contained object, a solution is a set of classes, and a system — whether a server or a client — is a set of objects that can interact with each other. And a client application is a “player” of nodes, while nodes are delivered to it in a messenger-like manner (or, for example, simply through files via email or other messengers), generated by the user or by other nodes. This is a kind of evolution of the idea of suip-files in SimpleUI.
+Резюмируя все вышесказанное, можно сказать что узел – это некий самостоятельный объект, решение – это набор классов, а система будь то сервер или клиент -  рой объектов, которые могут взаимодействовать между собой. А клиентское приложение – это «плеер» узлов, в то время как узлы доставляются в него в режиме мессенджера (или например просто через файлы через почту или другие мессенджеры), порождаются пользователем или другим узлами. Это своеобразное развитие идеи suip-файлов в SimpleUI https://uitxt.readthedocs.io/ru/latest/suip.html
+
+
+
