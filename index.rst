@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the NodaLogic documentation!
+Добро пожаловть в документацию NodaLogic!
 ===========================================
 
 .. toctree::
@@ -14,7 +14,7 @@ Welcome to the NodaLogic documentation!
    architect
    classes
    configuration
-   mobile
+   clients
    sync
    datasets			
 
@@ -24,7 +24,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
 
 
 
