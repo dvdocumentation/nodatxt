@@ -6,325 +6,183 @@
 Classes
 ==============
 
-Класс узла – это с одной стороны аспект хранения данных (структура, где экземпляры класса будут храниться и иметь API для доступа к классу и узлам), с другой – это как классический класс в ООП – инкапсулирует методы и наследует методы родителя (класса Node). Также класс описывает поведение объектов – то к какому разделу они относятся, какие события генерируются, обложка и т.д. Свойства класса относящиеся к клиенту разобраны в разделе Мобильный клиент. 
+A node class is, on the one hand, a data-storage aspect (the structure of a node’s data and the rules for working with it, so it can be stored and have an API to access the class and its nodes), and, on the other hand, a set of methods that implement the node’s behavior in the system. In a class, you define handlers (subscriptions) for node events, and you describe which methods should be executed when events occur. Client-related topics are described in the **Mobile client** section.
 
-В этом разделе описана работа с методами классов отдельно для клиента и сервера, а также работа с сервером через «удаленный класс». И, как в стандартном ООП есть методы класса (создание объекта, поиск объекта, получить все объекты и т.д.) и методы самого экземпляра класса (в NL это называется «узел»), наследуемые от объекта Node.
+This section describes working with class methods separately from node UI/UX: class methods (in NL these are called “nodes”) are inherited from the base ``Node`` object.
 
-
-Выполнение методов и обработчики
+Execution of methods and handlers
 -----------------------------------
-Метод может выполняться:
 
- * Локально на сервере(и веб клиенте) и на мобильном клиенте
- * В мобильном клиенте можно создать RemoteClass и получить «двойника» сервера с методами и данными. Под капотом там – HTTP запросы
- * Внешняя система может выполнить метод на сервере через REST-API
- * Внешняя система может выполнить метод даже на клиенте через Room, послав запрос и потом еще один для получения результата
+A method can be executed:
 
-Выполнение событий узла
-----------------------------------
+ * Locally on the server (and in the web client) and on the mobile client
+ * In the mobile client you can create a ``RemoteClass`` and obtain a remote “copy” of a server class with its methods and data. Under the hood this uses HTTP requests.
+ * An external system can execute a method on the server via REST API
+ * An external system can execute a method even on the client via Room, by sending a request and then another one to fetch the result
 
-.. image:: _static/c_events.png
-       :scale: 70%
-       :align: center
-
-На клиенте возникают события (закладка События) . У каждого события есть тип и может быть еще уточняющее свойство listener. Например есть 2 кнопки с id=button_1 и id=button_2, при нажатии в обоих случаях будет событие onInput но разный listener button_1/button_2 На событие onInput можно назначить один обработчик без указания Listener, тогда по обоим кнопкам мы получим выполнение этого обработчика, либо сделать 2 обработчика событий с указанием listener, таким образом listener – это фильтр
-
-.. image:: _static/c_actions.png
-       :scale: 70%
-       :align: center
-
-На одно событие можно подписать массив обработчиков – они будут выполняться друг за другом
-
-Свойство action отвечает за то, как будет выполнено событие в системе – **run**- синхронно, **runasync** – асинхронно (имеет смысл заполнить свойство postExecuteMethod  - выполнение коллбека после выполнения асинхронного метода) и **runprogress** - по сути, то же что и runasync но с блокировкой интерфейса
-
-Тут нужно заметить, что в NodaLogic с обработчиками python/android можно в принципе использовать всегда run, а асинхронность и показ прогресс-баров запускать методами клиента, что дает гибкий подход (можно, например сделать прогресс-бар только на кнопке)
-
-В качестве движка выполнения везде рассматриваем python
-
-В событии мы указываем методы, которые надо прописать у класса. Это можно сделать как режиме конфигуратора, на закладке Методы, так и просто в коде обработчиков в теле класса - система подтянет методы из кода. Кстати, можно и классы создавать из кода - они в конфигурацию подтянутся конструктором автоматически.
-
-Пример метода как он выглядит в конструкторе (если работать с методом из конструктора):
-
-.. code-block:: Python
-
- self.Show(
-  [
-    [{"type":"Input","id":"input1","caption":"input 1","value":"@input1"}],
-    [{"type":"Button","id":"button1","caption":"Get result"}]
-  ]
- )
-
- return True,{}
-
-А вот так выглядит весь класс:
-
-.. code-block:: Python
-
- class MyClass(Node):
-    def __init__(self, modules, jNode, modulename, uid, _data):
-        super().__init__(modules, jNode, modulename, uid, _data)
-
-    """Class MyClass"""
-
-    def Open(self, input_data=None):
-        self.Show(
-          [
-            [{"type":"Input","id":"input1","caption":"input 1","value":"@input1"}],
-            [{"type":"Button","id":"button1","caption":"Get result"}]
-          ]
-        )
-
-        return True,{}
-    def Input(self, input_data=None):
-        toast(self._data["input1"])
-        
-        return True,{}
-
-
-В самом методе у нас есть параметры:
-
-``self`` – ссылка на объект класса. Можно обращаться как к собственным методам класса, так и к методам родителя (подробнее тут).
-
-Особо стоит отметить свойство любого узла ``self._data``  - хранилище данных узла
-
-На вход метода также может быть передано ``input_data`` – словарь с входными данными. UI-события туда ничего не передают, но например если вы вызовете метод из другого метода, то можно передать туда данные в виде словаря.
-
-Также, результат метода возвращается через кортеж ``True/False, выходные_данные``. Первая часть кортежа может влиять на выполнение массива обработчиков события (если False то остальные обработчики не выполнятся) либо можно использовать по своему усмотрению
-
-Из обработчика можно работать не только с текущим узлом, но и с другими узлами через объект класса и методы этих узлов.
-
-Типы событий узла
+Executing node events
 ---------------------
 
-В данном разделе указаны события, относящиемя к конкретному экземпляру узла. Прочие события (не относящиеся к узлу) называются "Общие события" и описаны в соответствующем разделе.
+On the client, events are generated (the **Events** tab). Each event has a ``listener`` field — effectively, a filter. A handler is executed only when its ``listener`` matches the event’s listener.
 
-**onShow/onShowWeb** - запуск формы узла на мобильном/веб-клиенте при открытии любым способом (из списка, методом _open и т.д.)
+Multiple handlers can be subscribed to a single event — they will be executed sequentially.
 
-**onResume** - только для мобильного клиента, событие при возврате на форму (например, при возврате с другой формы узла)
+The ``action`` property defines how the event is executed. Available actions:
 
-**onInput/onInputWeb** - основное событие ввода мобильного/веб-клиента. Через это соыбытие проходит как пользовательский ввод, так и перехват событий, таких как например событие сканера
+ * ``run`` — run a method synchronously
+ * ``runasync`` — run a method asynchronously
+ * ``runasyncmodal`` — similar to ``runasync`` but with UI blocking (modal state)
 
-**onAcceptServer** - событие перед записью данных. Выполняется только на сервере, независимо от того, где инициирована запись (клиенты или выполнение API-запросов). Это основное событие для построение бизнес-логики сервера. В input_data обработчика передается переменная _saved_state в которой храниться состояние _data до изменения, а в _data при этом - текущее состояние перед записью. Разработчик может повлиять на данные в _data перед записью - дописать, изменить данные. Также можно прервать запись, вернув в кортеже False. Например: ``return False,{"message":"wrong data"}``
+Note: in NodaLogic, Python handlers follow the same approach across clients and server. This allows a unified style (e.g., you can show a progress bar only on a specific button).
 
+In all examples below, Python is used as the execution engine.
 
+In an event you specify method names that must be implemented in the node class. If methods are missing, they will be pulled into the configuration automatically by the constructor.
 
-Выполнение методов на сервере
-------------------------------------
+Handler input data
+------------------
 
-На сервере выполняются события веб-клиента, событие onAcceptServer для сохраняемых данных, и в будущем будут другие общие события, такие как регламентные задания. Также к любому узлу можно обратиться через API (которое генерируется автоматически при создании класса в конфигурации) и выполнить любой метод. 
+When a handler runs, the node has access to:
 
-Можно обращаться к их методам с помощью REST-команды ``POST /node/<class_name> /<node_id>/<method_name>`` , которая генерируется для каждого класса своя (на закладке API в классе). Можно передать параметры (попадут в input_data метода) и получить результат.
+ * ``self._data`` — the node data (JSON-like)
+ * ``listener`` — the listener of the event
+ * ``input_data`` — a dictionary with additional input data (optional)
 
-Для класса таже есть другие команды API (описано в разделе Синхронизация), которые позволяют:
+If a method is called from another method, you can pass data as a dictionary via ``input_data``.
 
- * создать/обновить узел выбранного класса
- * зарегистрировать узел в выбранной комнате для передаче на устройства
- * получить все узлы
- * получить доступ к конкретному узлу для получения/обновления/удаления
-
-Работа с узлом на сервере через RemoteClass
------------------------------------------------
-
-Не смотря на наличие REST-API удобнее в python-обработчике работать через обертку в виде объекта RemoteClass
-Через нее можно получить класс на сервере, создавать/обновлять узлы на сервере, выполнять их методы.
-
-Для работы сначала следует получить объект удаленного класса GetRemoteClass(class_name,server_url="")  где надо указать имя класса и можно указать псевдоним сервера. URL – сервера и псевдоним (а также сервер по умолчанию) следует укзаать в секции Servers конфигурации … Как минимум один сервер должен быть по умолчанию). Например так выполучим доступ к классу узлов на сервере: 
-
-``Warehouse = GetRemoteClass("Warehouse")``
-
-У удаленного класса (объект RemoteClass ) есть методы:
-
- * **get(self, uid)** – возвращает удаленный узел по id
- * **create(self, data=None)** – создает узел на сервере, можно передать _data для инициализации
- * **all(self)** – возвращает список всех узлов класса
-
-Пример:
-
-.. code-block:: Python
-
- # Получаем удаленный класс
- Warehouse = GetRemoteClass("Warehouse")
- # Получаем объект
- wh1 = Warehouse.get("4503")
- if wh1:
-     toast("Склад найден")
-     # Вызываем метод income
-     result = wh1.income({"qty": 1})
-     message("Method result:"+str(result))
-     # Доступ к данным
-     #message("Quantity:"+ str(wh1._data["qty"]))
-     #message("Name:"+str(wh1._data["name"]))
-
-     # Обновление данных
-     wh1._data["name"] = "Обновленный склад #1"
-     wh1._save()
-     toast("Updated name:"+wh1._data["name"])
-
- # Создание нового объекта
- new_wh = Warehouse.create({
-    "name": "Новый склад",
-    "qty": 50,
-    "_id":"2"
- })
- message("New warehouse ID:"+ new_wh._data["_id"])
-
- # Получение всех объектов
- all_warehouses = Warehouse.all()
- """for wh in all_warehouses:
-    print(f"Warehouse {wh['_id']}: {wh['name']} - {wh['qty']} units")"""
-
-У удаленного узла (RemoteObject) есть общие методы и также польщзвоательские методы и _data
-
- * **_save(self)**  - сохраняет данные на диск
- * **_register(self, room_uid)** – регистирует узел в комнате для того, чтобы другие устройства его получили через Room
-
-Выполнение методов узлов через Room
-----------------------------------------
-
-Наконец есть возможность из внешней системы обратиться непосредственно к узлу на устройстве (напомню, устройство подключено через WebSocket). В данном случае через HTTP мы обращаемся к механизму комнат и передаем запрос через WebSocket 
-
-В ответе на запрос, мы получаем request_id по которому позже (когда удаленный узел ответит) мы может прочитать статус выполнения и результат
-
-
-Методы классы и узлов на клиенте.
----------------------------------------
-
-В решении пользовательские классы  являются наследником Node и помимо свои методов, наследуют методы класса и объекта, описанные в данном разделе. 
-Вот пример, показывающий принцип работы с узлами. 
-
-.. code-block:: Python
-
- class Note(Node):
-    def __init__(self, modules, jNode, modulename, uid, _data): #обязательно добавляется конструкторм
-        super().__init__(modules, jNode, modulename, uid, _data)
-    def MyMethod(self, input_data=None): #пользовательский метод
-        pass
-
- #...
- class_obj = Note()   #Объект пользовательского класса 
- new_note = class_obj.create() #Новый узел
- new_note._data["some_variable"]= 1
- new_note.MyMethod({"a":5,"b":2})
- new_note._save() #Новый узел
-
-
-Методы класса мобильный клиент
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **create(uid=None, data=None)** – создает узел и возвращает объект узла. Можно передать uid
- * **get(uid)** – получить объект по UID
- * **get_all()** – получить все узлы класса
- * **sort( key=None, reverse=False)** – возврат объектов с сортировкой по ключу. И также вспомогательные: ``sort_by_field(field_name, reverse=False), sort_by_numeric_field(field_name, reverse=False), ort_by_date_field(field_name,        reverse=False, date_format='%Y-%m-%d')``
- * **find(condition)** – поиск объектов по условию в виде lambda-выражения типа lambda node: node['price'] > 100
- * **count()**  - возвращает общее количество объектов класса
- * **_upload_all(cls, server_url=None, config_uid=None, condition=None)** – выгружает все узлы класса на сервере по умолчанию или на определенный сервер
- * **register_all(cls, room_uid, server_url=None, config_uid=None, condition=None)** – регистрирует все узлы класса в комнате для других устройств
-
-
-Методы узла мобильный клиент
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **_save()** – записывает узел на диск. Также можно в классе поставить галочку Автосохрание и ввод из элементов ввода будет записываться автоматически. Важно! при Автосохранении, если не нужно чтобы некоторые переменные записывались, надо чтобы у них название начиналось с "!"
- * **delete()**  - удаляет узел и все его подчиненные узлы
- * **_upload(self, server_alias=None, config_uid=None)** - выгружает/обновляет узел на сервер.
- * **_delete_from_server(self, server_alias=None, config_uid=None)** - удаляет объект на сервере
- * **_register(self, room_uid, server_alias=None, config_uid=None)** – регистрирует объект в комнате для других устройств
-
- * **AddChild(parent,_class,uid=None,_data=None)** – добавляет подчиненный узел выбранного класса. ``new_line = self.AddChild("OrderLine")``
- * **RemoveChild(parent,uid)** – удаляет потомка и всех его потомков рекуррентно
- * **GetChildren(self, level=None)** – получает все подчиненные узлы и их подчиненные. Можно выбрать до какого уровня делать срез.
-
-Вспомогательные функции  для работы с узлами
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **to_uid(nodes_list)** – преобразует список узлов в список UID-ов
- * **from_uid(uids_list)** – преобразует список UID-ов в список узлов
-
-Методы класса и узла сервера и веб-клиента
-
---------------------------------------------
-
-Методы класса сервера и веб-клиента
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **create(uid=None, data=None)** – создает узел и возвращает объект узла. Можно передать uid и начальное значение _data
- * **get(uid)** – получить объект по UID
- * **get_all()** – получить все узлы класса
- * **sort( key=None, reverse=False)** – возврат объектов с сортировкой по ключу. И также вспомогательные: sort_by_field(field_name, reverse=False), sort_by_numeric_field(field_name, reverse=False), ort_by_date_field(field_name, reverse=False, date_format='%Y-%m-%d')
- * **find(condition)** – поиск объектов по условию в виде lambda-выражения типа lambda node: node['price'] > 100
-
-Методы узла сервера и веб-клиента
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **_save()** – записывает узел на диск.
- * **delete()**  - удаляет узел и все его подчиненные узлы
- 
- * **AddChild(parent,_class,uid=None,_data=None)** – добавляет подчиненный узел выбранного класса. ``new_line = self.AddChild("OrderLine")``
- * **RemoveChild(parent,uid)** – удаляет потомка и всех его потомков рекуррентно
- * **GetChildren(self, level=None)** – получает все подчиненные узлы и их подчиненные. Можно выбрать до какого уровня делать срез.
-
-Вспомогательные функции на клиенте для работы с узлами
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- * **to_uid(nodes_list)** – преобразует список узлов в список UID-ов
- * **from_uid(uids_list)** – преобразует список UID-ов в список узлов
-
-Транзакции
+Method results
 --------------
 
-Общие для клиент и сервера методы, которые позволяют организовать учет в узле (в _data)  ведение журнала защищенных транзакций и вычисления итогов в разрезе аналитик. Например можно в узле «Склад готовой продукции» вести учет товаров в разрезе упаковок, а в узле «Товар» - учет последних цен. Смысл транзакций в том, что они: 
+A method may return a tuple ``True/False, data``. ``True`` means success; ``False`` means failure (subsequent handlers will not run). You can also use this mechanism for your own purposes, e.g. returning a message:
 
- * **всегда накопительные** (транзакции всегда только добавляются) 
- * неразрывно **связаны с итогом** (остаток показателя – всегда результат последней транзакции, а ее остаток – результат предыдущей и т.д.) 
- * **защищенные** (транзакции образуют цепочку, защищенную хешем) 
- * этот подход обеспечивает **наибольшую производительность** – для вычисления остатка не надо делать sum по таблице, достаточно взять последнюю транзакцию и прибавить к значению новое значение. Для получения остатков – нужно просто взять последние транзакции
+``return False,{"message":"wrong data"}``
 
-В общем, можно сделать учетную систему чисто на узлах (без транзакций), но транзакции – механизм, заточенный на учетные цели.
+From a handler you can work not only with the current node, but also with other nodes via the class object and their methods.
 
-Типов итогов два:
+Node event types
+----------------
 
- * **Суммовые итоги** (по суммовым транзакциям). Это когда просто считается сумма – т.е. новое значение прибавляется к предыдущему. Например остаток товара – приход +5, Расход -1. Баланс - 4
- * **Срез последних значений**, по транзакциям состояний. Новое значение, заменя предыдущее. Например цена 100, новая цена 105. Баланс – 105.
+This section lists events related to a specific node. Global events are called **Common events** and are described in the corresponding section.
 
-Транзакции и балансы разделяются по схемам. Это просто строковый идентификатор, который позволяет разделить типы балансов. Например можно одновременно вести остатки товаров в разрезе «товар_единица» (схема _sku_unit) и «товар целиком» (схема _sku). Схема должна соответствовать ключам транзакции – массиву ключей
+**onShow/onShowWeb** — open the node form in the mobile/web client; fired when opened by any means (from a list, via ``_open`` method, etc.).
 
-Методы:
- 
-1. _sum_transaction(self, scheme_name, period=None, keys=None, values=None, meta=None) 
+**onResume** — mobile only; fired when returning to the form (e.g. returning from another node form).
 
- * scheme_name – идентификатор схемы, 
- 
- * period – дата/время транзакции, 
- 
- * keys – массив ключей
- 
- * values – массив значений
- 
- * meta – словарь произвольных данных
+**onInput/onInputWeb** — main input event for mobile/web; includes both normal input and intercepted events such as scanner events.
 
-2. _get_balance(self, scheme_name) – получает баланс по суммовым транзакциям
+**onAcceptServer** — server-side event before writing data. Must return ``True`` to allow saving. If it returns ``False``, saving is cancelled.
 
-3._get_sum_transactions(self, scheme_name) – получает массив суммовых транзакций
+Executing methods on the server
+------------------------------------
 
-4.  _state_transaction, _get_state_balance, _get_state_transactions – полностью аналогичны суммовым транзакциям, отличается только принцип вычисления баланса.
+On the server, web-client events and ``onAcceptServer`` are executed. You can also access any class and execute any method via the REST API (the API is created automatically when a class is defined in the configuration).
 
- 
+You can call methods using a REST command ``POST /api/<class_name>/<node_uid>/<method_name>`` and pass parameters (they will appear in ``input_data``) and get the result.
 
-Пример
+The class API also includes other commands (see **Synchronization**) that allow you to:
 
-.. code-block:: Python
+ * create/update a node of the selected class
+ * retrieve a node by UID
+ * search nodes by filters (depending on the server implementation)
 
- WClass = GetRemoteClass("Warehouse") #получаем на клиенте класс на сервере
- wh = WClass.get(self._data.get("_id"))
- res = wh._sum_transaction(
-    "sku_balance", #название схемы
-    "2025-09-05", #дата транзакции
-    [self._data.get("sku")], #ключи аналитики
-    [5], #значения (количество товара)
-    meta={"comment": "Приходная накладная #1"}
- )
+Working with a node on the server via RemoteClass
+-------------------------------------------------
 
- balance = wh._get_balance("sku_balance") #получение остатков
+In the mobile client (and in the web client when connected to the server), you can create a ``RemoteClass`` object and work with server nodes as if they were local.
 
+Typical flow:
 
+ * Get a remote class: ``WClass = GetRemoteClass("Warehouse")``
+ * Get/create nodes using class methods
+ * Call node methods remotely; under the hood it is an HTTP request
 
+Executing node methods via Room
+----------------------------------------
+
+Room allows sending commands to a device (client). This enables a scenario where an external system sends a request into a room, the client executes a method and then the external system polls for the result.
+
+Class and node methods on the client
+------------------------------------
+
+Client-side methods are split into mobile and web/server sets.
+
+Mobile client class methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **Create(uid=None,_data=None)** — create a new node object locally
+ * **Get(uid)** — get a node by UID from local storage
+ * **All()** — return all nodes of the class
+ * **Find(condition)** — search nodes using a lambda condition
+
+Mobile client node methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **_save()** — save the node to local storage
+ * **delete()** — delete the node and all its child nodes
+ * **AddChild(_class,uid=None,_data=None)** — add a child node of the given class
+ * **RemoveChild(uid)** — remove a child (recursively with its descendants)
+ * **GetChildren(level=None)** — get child nodes (optionally limited by depth)
+
+Helper functions for working with nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **to_uid(nodes_list)** — convert a list of nodes into a list of UIDs
+
+Class methods for server and web client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **create(uid=None,_data=None)** — create a node on the server
+ * **get(uid)** — get a node by UID
+ * **get_all()** — get all nodes of the class
+ * **sort(key=None, reverse=False)** — return sorted objects
+ * **find(condition)** — search objects using a lambda condition like ``lambda node: node['price'] > 100``
+
+Node methods for server and web client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **_save()** — save node to disk
+ * **delete()** — delete node and its descendants
+ * **AddChild(parent,_class,uid=None,_data=None)** — add a child node of the selected class. Example: ``new_line = self.AddChild("OrderLine")``
+ * **RemoveChild(parent,uid)** — remove a descendant recursively
+ * **GetChildren(self, level=None)** — get all descendants; optionally limit depth
+
+Client-side helper functions for nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ * **to_uid(nodes_list)** — convert a list of nodes into a list of UIDs
+
+Transactions
+------------
+
+There are 2 transaction types:
+
+1. **Sum transactions** — simple “add/subtract” transactions with analytics keys.
+
+Transaction fields:
+
+ * ``period`` — transaction date/time
+ * ``keys`` — array of analytic keys
+ * ``values`` — array of values
+ * ``meta`` — a dictionary of arbitrary metadata
+
+Methods:
+
+2. ``_get_balance(self, scheme_name)`` — get balance for sum transactions  
+3. ``_get_sum_transactions(self, scheme_name)`` — get an array of sum transactions  
+4. ``_state_transaction``, ``_get_state_balance``, ``_get_state_transactions`` — stateful transactions; differ only by the balance calculation principle.
+
+Example
+~~~~~~~
+
+.. code-block:: python
+
+   WClass = GetRemoteClass("Warehouse") # get server class in the client
+   wh = WClass.get("wh1")
+   wh._sum_transaction(
+       "sku_balance", # scheme name
+       "2025-09-05",  # transaction date
+       [self._data.get("sku")], # analytic keys
+       [5], # values (quantity)
+       meta={"comment": "Inbound delivery note #1"}
+   )
+   balance = wh._get_balance("sku_balance") # get balance
