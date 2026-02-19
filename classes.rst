@@ -21,7 +21,7 @@ The method can be executed:
 * An external system can execute a method even on the client via Room, by sending a request and then another one to get the result
 
 Executing node events
------------------------------
+----------------------------------
 
 .. image::_static/c_events.png
        :scale: 70%
@@ -244,6 +244,15 @@ Server and web client class and node methods
 
 -------------------------------------------
 
+Server events
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Server events occur regardless of where the node is modified - on the client, in the API, or through another node.
+
+* **onAcceptServer** - event before node data modification. Allows you to implement your own logic in the handler, change data in _data, and cancel the transaction. Returning False cancels the transaction. An error message can also be passed in message. The state of the data BEFORE the change is stored in the **_saved_state** key in input_data, and the data to be written is stored in self._data.
+* **OnAterAcceptServer** - event after writing data to the server. _data - the written state of the object.
+
+
 Server and Web Client Class Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -258,10 +267,19 @@ Server and Web Client Node Methods
 
 * **_save()** – writes the node to disk.
 * **delete()** - deletes a node and all its child nodes
+* **_register(alias)** - registers a node in a room by alias
  
 * **AddChild(parent,_class,uid=None,_data=None)** – adds a child node of the selected class. ``new_line = self.AddChild("OrderLine")``
 * **RemoveChild(parent,uid)** – removes a child and all its descendants recursively
 * **GetChildren(self, level=None)** – gets all child nodes and their children. You can choose the level to which to slice.
+
+Special class variables (flags)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **_background** - specifies the class highlighting in the lists where it is displayed
+* **_read_only** - prohibits editing for the node form (at the form level)
+* **_skip_accept_handler** - disables the **onAcceptHandler** handler once
+
 
 Helper functions on the client for working with nodes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,6 +326,12 @@ Methods:
 
 4. _state_transaction, _get_state_balance, _get_state_transactions – are completely analogous to amount transactions, only the principle of calculating the balance differs.
 
+5. _sum_transaction_unique(self, scheme_name: str, *, unique_key: str, period: str, keys: list, values: list, meta: dict | None = None, ) - adds a unique (idempotent) sum transaction that cannot be changed by subsequent method calls (except for special methods)
+
+6. _remove_sum_transaction_unique(self, scheme_name: str, *, unique_key: str) - removes a unique transaction by key
+
+7. _rebuild_sum_transactions(self, scheme_name: str) - complete recalculation of schemes
+
  
 
 Example
@@ -325,6 +349,8 @@ res = wh._sum_transaction(
 )
 
 balance = wh._get_balance("sku_balance") #getting balances
+
+
 
 
 

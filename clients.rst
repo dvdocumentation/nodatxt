@@ -59,7 +59,7 @@ Also for the web client, you can set a skin for the table view of the client in 
 Finally, for each node in _data, you can directly specify a specific node's cover using the **_cover** property. This has the highest priority and overrides the previous methods. Using '`_cover``, you can create custom covers for each node, meaning you can play with not only the content but also the form.
 
 Active covers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 .. image::_static/active_cover.png
        :scale: 55%
@@ -72,7 +72,7 @@ Covers can display not only data or static markup, but also active elements that
 Standard commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can place "Standard Commands" in clients by checking the "Use Standard Commands" box in the class. You can also create them manually using elements and handlers, but this is easier.
+You can add "Standard Commands" to clients by checking the "Use Standard Commands" box in the class. You can also create them manually using elements and handlers, but this is easier.
 
 The following become available:
 
@@ -112,7 +112,7 @@ On the mobile client (if using a data collection terminal, TSD), a connection to
 
 The driver must be launched in the web client on the user's computer, and a connection to the driver must be configured in the browser (the driver sets up a web socket as a server locally on the computer, and the browser acts as its client). The driver runs as a service, resident, and is launched from the command line.
 
-You can compile the program for your OS using pyinstaller by downloading it from GitHub or simply run it under Python after installing the dependencies. Alternatively, you can download the .exe file.
+You can compile the program using pyinstaller for your desired OS by downloading it from GitHub or simply run it under Python after installing the dependencies. Alternatively, you can download the .exe file.
 
 Parameters are specified on the command line. By default, interception is configured in keyboard emulation mode. The host and port can be specified.
 
@@ -129,11 +129,11 @@ To connect via COM port:
 
 
 Common features of the mobile and web client
-------------------------------------------------
+------------------------------------------
 
 
 General structure of the interface and events
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All visual nodes (data nodes and user processes) are located in sections.
 
@@ -197,7 +197,7 @@ The default rules are:
 * All elements in a row have a default height of "element height", and the row itself is stretched in width "to the entire container" (i.e. horizontally from edge to edge of the screen) and has no weight.  
 * However, you can change the horizontal row's properties by adding a "Parameters" element with the "w," "width," and "height" properties—that is, set the width and height for the horizontal row (which is the container). This is important if you need more complex markup.
  
-For example, in this markup, the bottom row takes up the entire remaining height, due to the fact that it has a weight of 1, then, in the Input element in this row, it makes sense to apply a height of -1 (the entire height)
+For example, in this markup, the bottom line takes up the entire remaining height, due to the fact that it has a weight of 1, then, in the Input element in this line, it makes sense to apply a height of -1 (the entire height)
 
 .. code-block:: Python
 
@@ -261,7 +261,7 @@ Output a text string.
  
 "size" – size (integer)
 
-Image
+Picture
 """""""""""
 
 Availability: Mobile client and web client
@@ -618,12 +618,14 @@ Availability: Mobile client and web client
 
 "type": "NodeInput"
 
-"dataset" is the name of the node class. Selecting it will open a selection form with search, sorting, visibility, and skins defined for this class.
+"dataset" is the name of the node class. Selecting it will open a selection form with the search, sorting, visibility, and skins specified for this class.
 
 
 The element allows you to select a node as a value in some other node, that is, to specify a reference to the node.
 
 The value is returned/set in the generic node reference format ``<class_name>$<node_id>``
+
+The value representation (what appears in the select field) is taken from _field_template in _data. If not specified, it is simply _id.
 
 
 
@@ -768,14 +770,14 @@ def CaptureImage(self, input_data=None):
 
 
 The _open() method for opening a node in the interface
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""
 
 Availability: Mobile client and web client
 
-**_open(method=None)** – opens the node form as if the user had opened it. By default, onShow and the method specified in the configuration are invoked, but this can be overridden in the method parameter.
+**_open(method=None)** – opens the node form as if the user had opened it. By default, onShow and the method specified in the configuration are invoked, but this can be overridden using the method parameter.
 
 Method for updating elements on the screen UpdateView
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""
 
 Availability: mobile client
 
@@ -1042,6 +1044,7 @@ the node remains accessible through code and API
 Example of hiding a node
 
 ``self._data["_hidden"] = True``
+
 
 
 
