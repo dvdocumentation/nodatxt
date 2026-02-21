@@ -264,9 +264,6 @@ Output a text string.
 Picture
 """""""""""
 
-Availability: Mobile client and web client
-
-
 .. image::_static/picture.png
        :scale: 55%
        :align: center
@@ -281,13 +278,55 @@ Example:
 
 .. code-block:: Python
 
-text_samples = [
-[{"type":"Text","value":"@my_text"}], #text from my_text key in _data
-[{"type":"Text","value":"Hello <u>world</u>"}] #text constant with html
+my_layout = [
+[{"type":"Picture","value":"@image_path"}]
 ]
 
+Image slider
+"""""""""""""""""""""""""
 
-Web client feature: image is only available in base64, this approach will change
+.. image::_static/qs_photo_notes_imageslider.png
+       :scale: 70%
+       :align: center
+
+Image output
+
+"type": "ImageSlider"
+
+"value" is a list of file names (for mobile - the absolute path, for the web - the file name) or a reference to a variable in _data containing such a list
+
+"captions" - a list of captions (optional) or a link to such a list
+
+"cover" - (for web) - adjusts proportions to the size of the element
+
+
+Example:
+
+.. code-block:: Python
+
+my_slider = { "type": "ImageSlider", "value": "@pic_files_web", "width": 100, "height": 100 , "cover":true, "captions":["1","2","3"]}
+
+
+Features of working with images in the mobile and web clients
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The image (file, media file) is always stored on the disk.
+
+In the web client: in the UserFiles\<configuration uid> server folder
+
+On mobile: in the application's internal folder associated with the configuration
+
+The link to it (in the Picture, ImageSlider element) is specified as a file name, but in different ways - in the mobile it is an absolute path, in the web client it is the file name (it adds the path itself).
+
+On the server, by placing a file in some way in the configuration folder (in addition to handlers, this can be done through the Media and Files galleries or simply through the API), you can access it in the element via the file name
+
+On the server, for example, two routes for working with images are implemented:
+
+POST /api/userfiles/<config_uid>/images – accepts a list of files and saves them in the required format. An example request is described in the Quick Start.
+
+``GET /api/userfiles/<config_uid>/raw/<path:filename> - get an image by file name``
+
+
 
 HTML field
 """"""""""""
@@ -454,7 +493,7 @@ Outputting a list as a table
 Availability: Mobile client and web client
 
 .. image::_static/flat_table.png
-       :scale: 70%
+       :scale: 55%
        :align: center
 
 
@@ -488,10 +527,10 @@ No parameters
 
 
 Bookmarks/Pages
-""""""""""""""""""""""""""
+---------------------
 
 .. image:: _static/tabs.png
-       :scale: 70%
+       :scale: 55%
        :align: center
 
 
@@ -624,8 +663,6 @@ Availability: Mobile client and web client
 The element allows you to select a node as a value in some other node, that is, to specify a reference to the node.
 
 The value is returned/set in the generic node reference format ``<class_name>$<node_id>``
-
-The value representation (what appears in the select field) is taken from _field_template in _data. If not specified, it is simply _id.
 
 
 
@@ -1044,7 +1081,5 @@ the node remains accessible through code and API
 Example of hiding a node
 
 ``self._data["_hidden"] = True``
-
-
 
 
