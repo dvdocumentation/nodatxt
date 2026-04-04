@@ -7,7 +7,7 @@ Index Configuration
 --------------------
 
 .. image:: _static/index_config.png
-:scale: 90%
+:scale: 75%
 :align: center
 
 Configuration is performed through the class, Indexes tab
@@ -22,7 +22,7 @@ Filtering in the node list (*web version only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: _static/index_filter.png
-:scale: 90%
+:scale: 75%
 :align: center
 
 You can also define custom filters (filters) in the node list.
