@@ -91,6 +91,8 @@ Command format
 
 If there are no arguments:
 
+.. code-block:: JSON
+ 
 {
   "command": "Refresh"
 }
@@ -109,9 +111,13 @@ Recommendations:
 
 Show
 ~~~~~~
+
 Purpose: show the layout of the current node.
+
 Argument format: ``[ layout_array ]``
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -126,8 +132,11 @@ PlugIn
 ~~~~~~~~~
 
 Purpose: Substitute layout/plugin into the current node.
+
 Argument format: [ layout_array ]
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -142,8 +151,11 @@ UpdateView
 ~~~~~~~~~~~~
 
 Purpose: to update an interface element.
+
 The argument format for the current node is: [view_id, value_json]
+
 Argument format with node_id: [node_id, view_id, value_json]
+
 Example:
 
 .. code-block:: JSON
@@ -157,8 +169,13 @@ SetTitle
 ~~~~~~~~~~~
 
 Purpose: to change the screen title.
+
 Argument format: [title]
+
 Example:
+
+.. code-block:: JSON
+ 
 {
   "command": "SetTitle",
   "argument": ["Acceptance"]
@@ -166,11 +183,14 @@ Example:
 
 Refresh
 ~~~~~~~~~~~~~
+
 Purpose: To update the current shape of the node.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "Refresh"
@@ -179,12 +199,13 @@ Example:
 RefreshTab
 ~~~~~~~~~~~~
 Purpose: refresh tab.
+
 argument format: [] or [tab_id]
+
 Example:
 
 .. code-block:: JSON
- 
- 
+  
 {
   "command": "RefreshTab",
   "argument": ["goods"]
@@ -193,10 +214,12 @@ Example:
 CloseNode
 ~~~~~~~~~~
 Purpose: Close the current node form.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "CloseNode"
@@ -204,9 +227,13 @@ Example:
 
 ScanBarcode
 ~~~~~~~~~~~~
+
 Purpose: to start barcode scanning.
+
 Argument format: [listener, event]
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -217,12 +244,16 @@ Example:
 
 Dialogue
 ~~~~~~~~~~~
+
 Purpose: to show a dialog.
+
 Argument format: [title, text, ok_button, cancel_button]
+
 Extended format: [title, text, ok_button, cancel_button, layout_json]
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "Dialog",
@@ -231,11 +262,14 @@ Example:
 
 AddTimer
 ~~~~~~~~~~~
+
 Purpose: add a client timer.
+
 Argument format: [timer_key, seconds]
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "AddTimer",
@@ -244,9 +278,13 @@ Example:
 
 StopTimer
 ~~~~~~~~~~
+
 Purpose: stop the client timer.
+
 Argument format: [timer_key]
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -257,9 +295,13 @@ Example:
 
 StopAllTimers
 ~~~~~~~~~~~~~~~
+
 Purpose: Stop all client timers.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -269,9 +311,13 @@ Example:
 
 ShowProgressButton
 ~~~~~~~~~~~~~~~~~~~
+
 Purpose: to show progress on a button.
+
 Argument format: [button_id]
+
 Example:
+
 .. code-block:: JSON
  
  
@@ -280,13 +326,17 @@ Example:
   "argument": ["save_button"]
 }
 
+
 ShowProgressGlobal
 ~~~~~~~~~~~~~~~~~~~~~~
+
 Purpose: to show a global progress indicator.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "ShowProgressGlobal"
@@ -297,8 +347,8 @@ HideProgressGlobal
 Purpose: Hide the global progress indicator.
 Argument format: []
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "HideProgressGlobal"
@@ -307,26 +357,32 @@ Example:
 RunPython
 ~~~~~~~~~~
 Purpose: Run a method of the current node. The old, incorrect name RunPyhon is also supported.
+
 Argument format: [method_name]
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "RunPython",
   "argument": ["onAccept"]
 }
 
+
 RunEvent
 ~~~~~~~~~~~
 
 Purpose: to trigger an event.
+
 For the argument node: [event, listener]
+
 For common argument: [listener, event, parameter2]
+
 Example for node:
+
 .. code-block:: JSON
- 
- 
+
  
 {
   "command": "RunEvent",
@@ -337,10 +393,12 @@ Save
 ~~~~~~~~~
 
 Purpose: save the current node.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "Save"
@@ -348,24 +406,34 @@ Example:
 
 Upload
 ~~~~~~~~
+
 Purpose: upload the current node to the server.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
- 
  
 {
   "command": "Upload"
 }
 
 
+
 General UI commands
 ~~~~~~~~~~~~~~~~~~~~~
 
-**toast**
+
+toast
+""""""""""
+
 Purpose: short system toast message.
+
 Argument format: [text]
+
 Example:
+
 .. code-block:: JSON
  
   {
@@ -373,10 +441,15 @@ Example:
    "argument": ["Saved"]
   }
 
-**message**
+message
+""""""""""
+
 Purpose: snackbar message at the bottom of the screen.
+
 Argument format: [text]
+
 Example:
+
 .. code-block:: JSON
  
 {
@@ -384,10 +457,17 @@ Example:
    "argument": ["Operation completed"]
 }
 
-**vibrate**
+
+vibrate
+""""""""""
+
+
 Purpose: vibration.
+
 Argument format: [] or [milliseconds]
+
 Example:
+
 .. code-block:: JSON
  
   {
@@ -395,13 +475,18 @@ Example:
    "argument": [300]
   }
 
-**SendNotification**
+SendNotification
+"""""""""""""""""""
+
 Purpose: Show Android notification.
+
 Argument formats:
 - [message]
 - [message, title]
 - [message, title, number, progress]
+
 Example:
+
 .. code-block:: JSON
  
 {
@@ -409,10 +494,15 @@ Example:
    "argument": ["Task completed", "NodaLogic"]
 }
 
-**SendProgressNotification**
+SendProgressNotification
+"""""""""""""""""""""""""""""""
+
 Purpose: Show/refresh progress notification.
+
 Argument format: [message, title, number, progress]
+
 Example:
+
 .. code-block:: JSON
  
   {
@@ -420,23 +510,33 @@ Example:
    "argument": ["Loading", "NodaLogic", 1001, 45]
 }
 
-**beep**
+beep
+"""""""
+
 Purpose: sound signal.
+
 Argument formats:
 - []
 - [tone]
 - [tone, duration_ms, volume]
+
 Example:
+
 .. code-block:: JSON
  
   {
    "command": "beep"
   }
 
-**speak**
+speak
+""""""""
+
 Purpose: to pronounce text via Text-To-Speech.
+
 Argument format: [text]
+
 Example:
+
 .. code-block:: JSON
  
 {
@@ -444,21 +544,30 @@ Example:
    "argument": ["Done"]
 }
 
-**listen**
+listen
+""""""""
+
 Purpose: Run speech recognition if RECORD_AUDIO permission is present.
+
 Argument format: []
+
 Example:
+
 .. code-block:: JSON
  
   {
    "command": "listen"
   }
 
-**share_text**
+share_text
+"""""""""""
 
 Purpose: Open the system share dialog for text.
+
 Argument format: [text]
+
 Example:
+
 .. code-block:: JSON
  
   {
@@ -466,13 +575,3 @@ Example:
    "argument": ["Text to send"]
 }
 
-_SendNotificationProgress
-Purpose: Internal version of progress notification. SendProgressNotification is generally preferred.
-Argument format: [message, title, number, progress]
-Example:
-.. code-block:: JSON
- 
-  {
-   "command": "_SendNotificationProgress",
-   "argument": ["Loading", "NodaLogic", 1001, 70]
-}
