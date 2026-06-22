@@ -227,30 +227,47 @@ The server component is written in Python and is available on Github (links at t
 This scheme also makes extensive use of S3 storage—for images and handlers. For security, this is wrapped in a server API, meaning the client doesn't store S3 write access keys (it's assumed that reading keys aren't required—it's public. If not, you need to add read authorization as well). The client receives a temporary token, writes data with it, and receives a link. nmaker has its own storage. If you're deploying your own NL server, you'll also need S3 storage (if you're using PythonScript handlers or images), and you'll need to enter your account credentials in boto3.client.
 
 
-Scenario "Uploading nodes from a mobile client to the server."
+Scenario: "Uploading nodes from the mobile client to the server."
 ---------------------------------------------------------------
 
-This is the delivery of new nodes or updating previously uploaded nodes with new data. When designing client-server solutions, you can go beyond this synchronization (which, when uploading, essentially simply updates the server's _data and the client's node's _data) and transfer information through calls to server methods. You can also upload nodes (via RomoteClass). However, for simple situations, you can simply use the upload options described below.
+This involves delivering new nodes or updating previously uploaded nodes with new data. When designing client-server solutions, you are not limited to just this type of synchronization (which, during upload, essentially updates the server's `_data` and the client node's `_data`); you can also transmit information by calling server-side methods. Nodes can also be uploaded (via `RemoteClass`). However, for simple scenarios, you can simply use the upload options described below.
 
-Note: A specific server is a specific instance of your solution (it can be deployed anywhere), and configurations are released for all instances. Therefore, solutions operate with server aliases rather than specific URLs. There must be at least one primary server alias. This is configured in the Servers section of the configuration. In most cases, there is only one server, and simply creating one server with the "Primary Server" checkbox is sufficient.
+.. note:: A specific server refers to a specific instance of your solution (which can be deployed anywhere), whereas configurations are released for all instances. Therefore, solutions operate using server aliases rather than specific URLs. At least one alias for the primary server must be defined. This is configured in the "Servers" section of the configuration. In most cases, there is only one server, so it suffices to create a single server entry with the "Primary server" checkbox selected.
 
-Unloading can be interactive or via a method handler.
+Uploads can be performed interactively or via a method handler.
 
-To unload through a handler, you need to use methods
+To upload via a method handler, use the following methods:
 
-``_upload(server_alias=None)`` is an object (node) method. Uploads to the default server or to the specified alias.
+``_upload(server_alias=None)`` – An object (node) method. Uploads to the default server or to a specified alias (e.g., ``result,error = self._upload() if result!=True...``).
 
-``_delete_from_server(server_alias=None)`` - an object (node) method. Deletes from the default server or to the specified alias.
+``_delete_from_server(server_alias=None)`` – An object (node) method. Deletes from the default server or from a specified alias.
 
-``_register(room_uid)`` is an object (node) method. It registers a room.
+``_register(room_uid)`` – An object (node) method. Registers the node in a room.
 
-``_upload_all()`` is a class method. Uploads everything
+``_upload_all()`` – A class method. Uploads everything.
 
-``register_all(room_uid)`` is a class method. Registers everything
+``register_all(room_uid)`` – A class method. Registers everything.
 
+``UploadMany(ids)`` – A general method; synchronously uploads an array of node IDs. In PythonScript: `UploadIds(ids)` or `выгрузить_массив(ids)`
 
+`QuploadMany(ids)` – a general method that uploads an array of nodes asynchronously or via a queue. In PythonScript: `QuploadIds(ids)` or `выгрузить_массив_через_очередь(ids)`
 
-Interactive is configured on the Migration tab, just like Rooms registration. For the server node, it's Rooms registration, while for the mobile client, it's server upload. Be especially careful when checking the "Register when saving" box, as the client has autosave and other features, such as
+Interactive mode is configured on the **Migration** tab, just like registration in **Rooms**. For a server-side node, this corresponds to registration in **Rooms**, whereas for a mobile client, it corresponds to an upload to the server. Exercise particular caution when enabling the "Register on save" checkbox, as the client may perform actions like autosaving, and...
+
+Synchronous upload vs. upload via queue
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The methods described above are synchronous: you execute `_upload`, a request is sent, the system waits for a response, and returns `False` if the operation fails. However, `_upload` can also be performed via a queue. In the class settings (on the **Migration** tab), you can enable **Send via queue**. The process then works as follows: the system attempts to send the data asynchronously; if this fails, the item is placed in a queue. The task of delivering the node to the server is then handled by worker processes, which will continue attempting delivery even if the application is inactive, doubling the interval between attempts each time. The queue features a visual interface (Main Menu > Upload Queue) where you can monitor delivery status.
+
+Additionally, the queue system supports specific commands and events:
+
+**onInput/onUploadSent** – a node event triggered when the node is successfully sent via the queue.
+
+**onInput/onUploadQueued** – a node event triggered when the node fails to send immediately and is placed in the queue.
+
+`_qupload` – a node method for asynchronous upload or upload via a queue. In NodaScript, `qupload` (or `выгрузить_через_очередь`) uploads the current node asynchronously.
+
+`UploadQueueIds` – a function that retrieves an array of IDs for nodes currently in the queue.
 
 
 
