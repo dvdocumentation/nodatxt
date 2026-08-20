@@ -3,7 +3,7 @@ Quant Ledger
 
 ``quant_ledger`` is an optional server-side SQL module for NodaLogic that stores additive movements and current balances. It is useful for stock, money, reservations, location load, and similar cases where values change by ``+/-`` deltas and the resulting balance must be updated reliably and atomically.
 
-The module has no separate Designer UI and is intended only for server-side Python handlers. When the ``quant_ledger`` directory is present in the project, the required SQL tables are created at application startup. The current implementation supports SQLite.
+The module has no separate Designer UI and is intended only for server-side Python handlers. The current implementation supports SQLite.
 
 Import
 ------
