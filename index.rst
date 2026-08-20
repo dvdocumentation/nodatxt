@@ -18,6 +18,7 @@
    clients
    nodascript
    indexes
+   quant_ledger_en
    sync
    cv
    http
