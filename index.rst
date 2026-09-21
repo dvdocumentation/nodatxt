@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Добро пожаловть в документацию NodaLogic!
+Welcome to NodaLogic documentation!
 ===========================================
 
 .. toctree::
@@ -21,6 +21,7 @@
    quant_ledger_en
    sync
    cv
+   maps_en
    http
    datasets			
 
