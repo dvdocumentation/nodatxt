@@ -354,10 +354,18 @@ table_layout = [
 *_background* in a list item – colors the background in the specified HEX color
 
 ``table_data = [{"name": "element 1", "key":"el1","_background":"#701705" },{"name": "element 2", "key":"el2"}]``
- 
-"columns_count" – the number of table columns. Displays the list as multiple columns.
 
-"horizontal" – horizontal orientation of the list.
+Clicking a normal list row generates an event with ``listener=<table id>_click``. Before the event, the following values are written to ``_data``:
+
+* ``<table id>_selected_data`` – selected row data
+* ``<table id>_selected_key`` – row ``key`` value (if present)
+* ``<table id>_selected_position`` – row position
+
+For backward compatibility, the web client additionally keeps the legacy event with ``listener=<table id>``.
+ 
+"columns_count" – the number of table columns. Displays the list as multiple columns. Android only.
+
+"horizontal" – horizontal orientation of the list. Android only.
 
 "search_enabled" – enables search mode
 
@@ -501,7 +509,7 @@ When interacting with them, the node receives slightly different (extended) data
 For example, Button.
 Variables for click event (onInput):
 
-listener – comes in the format ``<table id>_input<element id>``
+listener – comes in the format ``<table id>_input_<element id>``
 
 ``<table id>_input_position`` - this variable returns the position of the list item where the click occurred
 
@@ -509,7 +517,7 @@ If _data contains a key then the key is also returned:
 
 ``<table id>_input_key`` - the key value of the element
 
-For input fields – CheckBox/Switch/Input, the entered value itself is added to the _data variable - ``<table id>_input<element id>``
+For input fields – CheckBox/Switch/Input, the entered value itself is added to the _data variable - ``<table id>_input_<element id>``
 
 Active elements available:
 
