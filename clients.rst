@@ -152,6 +152,94 @@ All nodes in sections can have a cover, or so-called default cover. The cover is
 
 When you click a node in a section, the node form opens and the onShow event is generated. This event can contain a handler for rendering the screen, otherwise it may be empty. The user may navigate away from this screen and then return (for example, by opening another node in another screen). In such cases, when returning to the screen, the onResume event is generated. This event can contain either the same event as onShow or something special.
 
+
+A node form instead of a section list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally a section displays a list of node covers. A section can instead host
+one selected node's **form**. Set ``mobile_form_node`` for Android and
+``web_form_node`` for the web client; the two settings are independent.
+
+.. image:: _static/section_form.png
+   :width: 90%
+   :align: center
+   :alt: A node form hosted directly inside a section
+
+Example section definition from the Money demo:
+
+.. code-block:: json
+
+   {
+     "name": "Деньги",
+     "code": "money",
+     "commands": "Добавить операцию|add_operation",
+     "mobile_form_node": "MoneyWorkspace$singleton",
+     "web_form_node": "MoneyWorkspace$singleton"
+   }
+
+``MoneyWorkspace`` is a hidden, non-stored ``custom_process`` class
+(``has_storage: false``) whose ``init_screen_layout`` and
+``init_screen_layout_web`` define the section UI. ``MoneyOperation`` stores
+real operations separately. The hosted form can display a ``Table`` with
+``nodes_source: true`` and an array of operation node UIDs.
+
+**Events from a hosted section form** go through configuration-level
+``CommonEvents``, not automatically through ordinary class ``events``:
+
+* ``onInput`` on Android and ``onInputWeb`` on the web;
+* ``onStartMenuCommand`` and ``onStartMenuCommandWeb`` for commands defined
+  by the section (the command ID is provided in event data);
+* shared top-level functions in the respective Android/server handlers can
+  process them, e.g. ``money_refresh(input_data=None)`` and
+  ``add_money_operation(input_data=None)``.
+
+.. code-block:: json
+
+   {"event":"onInput", "listener":"", "actions":[
+     {"action":"run", "source":"internal", "server":"internal", "method":"money_refresh"}
+   ]}
+
+The handler may return ``(True, data)`` after updating ``operations`` (node
+UIDs), ``total_text``, and the date filters. Define corresponding
+``onInputWeb`` and section-command events for the web client.
+
+Android layout tip: when a plain ``Text`` placed next to a ``Spinner`` is
+shifted vertically by baseline alignment, wrap it in a ``VerticalLayout``
+with a one-dimensional ``value`` list. No application code changes are needed.
+
+Index-based section filters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Section filters are derived from **class indexes**. In the class editor,
+open **Indexes**, add an index for the chosen field, and set
+``filter_enabled: true`` along with ``filter_label`` and ``filter_type``.
+The web client renders filters above the section list; Android uses a filter
+button and dialog. Multiple enabled filter conditions are combined with AND.
+
+.. image:: _static/Filters.png
+   :width: 95%
+   :align: center
+   :alt: Index configuration and filters in web and Android clients
+
+.. code-block:: json
+
+   "indexes": [
+     {"name":"closed", "kind":"hash_index", "keys":"closed",
+      "filter_enabled":true, "filter_label":"Closed", "filter_type":"boolean"},
+     {"name":"count_of_products", "kind":"hash_index", "keys":"count_of_products",
+      "filter_enabled":true, "filter_label":"Count of products", "filter_type":"number"},
+     {"name":"main_product", "kind":"hash_index", "keys":"main_product",
+      "filter_enabled":true, "filter_label":"Main product", "filter_type":"node"}
+   ]
+
+Filter types include boolean, number, string and node references. Supported
+operators depend on the type (numbers include ``=``, ``>``, ``>=``, ``<``,
+``<=``, ``<>``). Only enabled conditions constrain the result. On Android,
+filters use local SQLite indexes rather than loading every node into memory.
+Server-only/semantic indexes are not suitable for offline Android filters;
+older downloaded nodes may require an index backfill.
+
+
 Principles of screen layout and other visual forms.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -281,6 +369,153 @@ Example:
 my_layout = [
 [{"type":"Picture","value":"@image_path"}]
 ]
+
+
+SVG Card and editable Picture
+"""""""""""""""""""""""""""""
+
+``Card`` accepts an SVG icon using ``svg`` (SVG source), ``svg_size`` and
+``svg_color`` (useful for monochrome icons). Use ``image_position`` to place
+it on the ``left`` (default), ``right``, ``top`` or ``bottom``. Card content
+continues to live in ``value``; for portable layouts prefer a two-dimensional
+row-based array, while the current web renderer also accepts a one-dimensional
+array of elements.
+
+.. image:: _static/CardSvg.png
+   :width: 88%
+   :align: center
+   :alt: SVG inside Card with nested text
+
+.. code-block:: json
+
+   {"type":"Card", "svg":"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='4' y='4' width='16' height='16' rx='3' fill='#4f7890'/></svg>",
+    "svg_size":42, "image_position":"left", "value":[[
+      {"type":"VerticalLayout", "value":[
+        {"type":"Text", "value":"Object", "bold":true},
+        {"type":"Text", "value":"Pump station No. 3", "size":14}
+      ]}
+    ]]}
+
+``Picture`` also supports ``svg`` / ``svg_size`` / ``svg_color`` for a
+static illustration. A photo bound through ``value:"@field"`` can be made
+editable with ``editable:true``. Users can replace or remove the image,
+which is stored as a value of the node field. Configure ``width``, ``height``,
+``radius`` (e.g. 12), and ``fit`` (``contain`` or ``cover``). Opening an actual
+photo shows the full-size image. ``editable`` requires a bound field;
+do not combine editable photo mode with a fixed ``svg``.
+
+.. image:: _static/picture_editable.png
+   :width: 75%
+   :align: center
+   :alt: Picture photo editing and removal actions
+
+.. code-block:: json
+
+   {"type":"Picture", "id":"work_photo", "value":"@work_photo",
+    "editable":true, "width":250, "height":170,
+    "radius":12, "fit":"cover"}
+
+Divider
+"""""""
+
+``Divider`` (alias ``Separator``) draws a thin horizontal line between groups
+without an enclosing card or heavy shadow.
+
+.. code-block:: json
+
+   [[{"type":"Text", "value":"Job files", "bold":true}],
+    [{"type":"Divider", "width":-1}],
+    [{"type":"Files", "id":"docs", "value":"@docs"}]]
+
+VerticalDivider
+"""""""""""""""
+
+``VerticalDivider`` draws a thin **vertical** rule between elements in the
+**same horizontal row**, supported in both WEB and Android clients.
+``Divider`` and its legacy alias ``Separator`` remain **horizontal** rules.
+
+``VerticalDivider`` has no ``value``, node binding, or events. Its default
+height follows the neighboring controls in a row. Set ``height`` explicitly
+when a fixed line height is needed. The rule is about 1 px/dp wide with
+small automatic horizontal margins.
+
+.. code-block:: json
+
+   [
+     [
+       {"type":"Text", "value":"Equipment: pump station", "size":14},
+       {"type":"VerticalDivider", "height":32},
+       {"type":"Text", "value":"In progress", "size":14}
+     ],
+     [{"type":"Divider", "width":-1}]
+   ]
+
+.. image:: _static/VerticalDivider.png
+   :width: 90%
+   :align: center
+   :alt: Vertical and horizontal dividers
+
+``VerticalDivider`` can also be placed inside a one-dimensional
+``HorizontalLayout.value``. Use ``Divider`` between stacked blocks.
+
+Files: attached documents
+"""""""""""""""""""""""""
+
+``Files`` reads an **array of JSON objects** from a node field. Each item may
+contain ``name``, ``description``, ``mime``, ``size`` (bytes), ``storage``
+(``local`` / ``server`` / ``s3``), ``path`` / ``url`` / ``uri`` and
+``sync_status``. ``caption`` is the block heading; ``editable:true``
+enables attaching/removing files; ``sync`` controls where newly attached
+files are saved (``local``, ``server``, ``s3``).
+
+.. image:: _static/FileBlocs.png
+   :width: 90%
+   :align: center
+   :alt: Attached file blocks with file-type and offline icons
+
+.. code-block:: json
+
+   {"type":"Files", "id":"docs", "caption":"Documentation",
+    "value":"@docs", "editable":true, "sync":"server"}
+
+One element of ``_data["docs"]`` could be:
+
+.. code-block:: json
+
+   {
+     "name":"Installation manual.pdf",
+     "description":"Installation instructions",
+     "mime":"application/pdf",
+     "size":2457600,
+     "storage":"server",
+     "path":"instructions/manual.pdf",
+     "sync_status":"synced"
+   }
+
+File-type icons are selected from file extensions. A separate small indicator
+shows **offline availability**, not merely successful upload: green means
+there is a local Android copy; ``synced`` alone does not guarantee it. The
+web client cannot infer Android cache state from a URL. Removing an entry
+from an editable ``Files`` block unlinks it from the node and does not
+necessarily delete the original in Flask/S3.
+
+Inbound URLs (for example, links sent by a 1C integration) must point to
+files **already present** in the Flask UserFiles storage or S3. Android can
+cache documents for offline access. Files selected on Android are stored
+locally before the chosen sync operation. Base64 remains an alternative
+representation but is not the default for general attachments.
+
+Android also provides a file-picker ``PlugIn`` action:
+
+.. code-block:: python
+
+   self.PlugIn([{"type":"FileButton", "id":"attach_doc", "caption":"Attach file",
+                 "target":"docs", "sync":"server"}])
+
+``target`` is the field holding the attachments array. ``editable`` buttons
+and the ``PlugIn`` action are alternative ways of starting file selection;
+do not add both unless the UI calls for it.
+
 
 Image slider
 """""""""""""""""""""""""
