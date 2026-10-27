@@ -19,6 +19,7 @@ Welcome to NodaLogic documentation!
    nodascript
    indexes
    quant_ledger_en
+   mcp
    sync
    cv
    maps_en
